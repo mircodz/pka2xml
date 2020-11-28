@@ -2,6 +2,7 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/twofish.h>
 
+#include <cstdlib>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -35,7 +36,8 @@ std::string decrypt(
     const unsigned char *key,
     int key_size,
     const unsigned char *iv,
-    int iv_size) {
+    int iv_size,
+    bool skip_last_stages = false) {
 
   typename CryptoPP::EAX<Algorithm>::Decryption d;
   d.SetKeyWithIV(key, key_size, iv, iv_size);
@@ -53,6 +55,10 @@ std::string decrypt(
   CryptoPP::StringSource ss(processed, true,
     new CryptoPP::AuthenticatedDecryptionFilter(d, new CryptoPP::StringSink(output))
   );
+
+  if (skip_last_stages) {
+    return output;
+  }
 
   // Stage 3 - deobfuscation
   for (int i = 0; i < output.size(); i++) {
@@ -93,23 +99,21 @@ std::string decrypt_pt(const std::string &input) {
   return decrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv));
 }
 
-/// TODO fix zlib segfault
 /// TODO documentation
 std::string decrypt_logs(const std::string &input) {
   static const unsigned char key[16] = { 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186 };
   static const unsigned char iv[16]  = { 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190 };
 
   std::string decoded = base64_decode(input);
-  return decrypt<CryptoPP::Twofish>(decoded, key, sizeof(key), iv, sizeof(iv));
+  return decrypt<CryptoPP::Twofish>(decoded, key, sizeof(key), iv, sizeof(iv), /* skip_last_stages */ true);
 }
 
-/// TODO fix zlib segfault
 /// TODO documentation
 std::string decrypt_nets(const std::string &input) {
   static const unsigned char key[16] = { 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186 };
   static const unsigned char iv[16]  = { 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190 };
 
-  return decrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv));
+  return decrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv), /* skip_last_stages */ true);
 }
 
 int main(int argc, char *argv[]) {
@@ -123,6 +127,9 @@ int main(int argc, char *argv[]) {
     f_in.close();
 
     std::ofstream f_out{argv[2]};
+    if (!f_out.is_open()) {
+      throw 0;
+    }
     f_out << decrypt_pt(input);
     f_out.close();
   }
