@@ -2,8 +2,10 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/twofish.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -116,9 +118,14 @@ std::string decrypt_nets(const std::string &input) {
   return decrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv), /* skip_last_stages */ true);
 }
 
+bool opt_exists(char** begin, char** end, const std::string& option) {
+    return std::find(begin, end, option) != end;
+}
+
 int main(int argc, char *argv[]) {
-  if (argc > 2) {
-    std::ifstream f_in{argv[1]};
+
+  if (argc > 3 && opt_exists(argv, argv + argc, "-p")) {
+    std::ifstream f_in{argv[2]};
     if (!f_in.is_open()) {
       throw 0;
     }
@@ -126,11 +133,31 @@ int main(int argc, char *argv[]) {
                       std::istreambuf_iterator<char>()};
     f_in.close();
 
-    std::ofstream f_out{argv[2]};
+    std::ofstream f_out{argv[3]};
     if (!f_out.is_open()) {
       throw 0;
     }
     f_out << decrypt_pt(input);
     f_out.close();
+  } else if (argc > 2 && opt_exists(argv, argv + argc, "-l")) {
+    std::ifstream f_in{argv[2]};
+    if (!f_in.is_open()) {
+      throw 0;
+    }
+    std::string line;
+    while (std::getline(f_in, line)) {
+      std::cout << decrypt_logs(line) << std::endl;
+    }
+    f_in.close();
+  } else if (argc > 2 && opt_exists(argv, argv + argc, "-n")) {
+    std::ifstream f_in{argv[2]};
+    if (!f_in.is_open()) {
+      throw 0;
+    }
+    std::string input{std::istreambuf_iterator<char>(f_in),
+                      std::istreambuf_iterator<char>()};
+    std::cout << decrypt_nets(input) << std::endl;
+    f_in.close();
   }
+
 }
