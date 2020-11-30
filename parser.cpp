@@ -1,6 +1,7 @@
 #include <cryptopp/eax.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/twofish.h>
+#include <cryptopp/cast.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -40,7 +41,6 @@ std::string decrypt(
     const unsigned char *iv,
     int iv_size,
     bool skip_last_stages = false) {
-
   typename CryptoPP::EAX<Algorithm>::Decryption d;
   d.SetKeyWithIV(key, key_size, iv, iv_size);
 
@@ -49,8 +49,9 @@ std::string decrypt(
 
   // Stage 1 - deobfuscation
   int length = input.size();
-  for (int i = 0; i < input.size(); i++) {
-    processed += input[length + ~i] ^ (length - i * length);
+  processed.resize(length);
+  for (int i = 0; i < length; i++) {
+    processed[i] = input[length + ~i] ^ (length - i * length);
   }
 
   // Stage 2 - decryption
@@ -118,13 +119,88 @@ std::string decrypt_nets(const std::string &input) {
   return decrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv), /* skip_last_stages */ true);
 }
 
+/// TODO documentation
+/// TODO reverse second part of decoding
+std::string decrypt_pts(const std::string &input) {
+  static const unsigned char key[16] = { 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18 };
+  static const unsigned char iv[16]  = { 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254 };
+
+  return decrypt<CryptoPP::CAST256>(input, key, sizeof(key), iv, sizeof(iv), /* skip_last_stages */ true);
+}
+
+/// TODO documentation
+std::string compress(const unsigned char* data, int nbytes) {
+  unsigned long len = nbytes + nbytes / 100 + 13;
+
+  std::vector<unsigned char> buf(len);
+
+  buf.resize(len + 4);
+
+  int res = ::compress2(buf.data() + 4, &len, data, nbytes, -1);
+
+  if (res != Z_OK) {
+    throw res;
+  }
+
+  // need to shrink buffer to appropriate size after compression
+  buf.resize(len + 4);
+
+  buf[0] = (nbytes & 0xff000000) >> 24;
+  buf[1] = (nbytes & 0x00ff0000) >> 16;
+  buf[2] = (nbytes & 0x0000ff00) >> 8;
+  buf[3] = (nbytes & 0x000000ff);
+
+  return std::string(reinterpret_cast<const char*>(buf.data()), buf.size());
+}
+
+template <typename Algorithm>
+std::string encrypt(
+    const std::string &input,
+    const unsigned char *key,
+    int key_size,
+    const unsigned char *iv,
+    int iv_size) {
+  typename CryptoPP::EAX<Algorithm>::Encryption e;
+  e.SetKeyWithIV(key, key_size, iv, iv_size);
+
+  // Stage 1 - compression
+  std::string compressed = compress(reinterpret_cast<const unsigned char*>(input.data()), input.size());
+
+  // Stage 2 - obfuscation
+  for (int i = 0; i < compressed.size(); i++) {
+    compressed[i] = compressed[i] ^ (compressed.size() - i);
+  }
+
+  // Stage 3 - encryption
+  std::string encrypted;
+  CryptoPP::StringSource ss(compressed, true,
+    new CryptoPP::AuthenticatedEncryptionFilter(e, new CryptoPP::StringSink(encrypted))
+  );
+
+  // Stage 4 - obfuscation
+  std::string output;
+  int length = encrypted.size();
+  output.resize(length);
+  for (int i = 0; i < encrypted.size(); i++) {
+    output[length + ~i] = encrypted[i] ^ (length - i * length);
+  }
+
+  return output;
+}
+
+std::string encrypt_pt(const std::string &input) {
+  static const unsigned char key[16] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
+  static const unsigned char iv[16]  = { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 };
+
+  return encrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv));
+}
+
 bool opt_exists(char** begin, char** end, const std::string& option) {
     return std::find(begin, end, option) != end;
 }
 
 int main(int argc, char *argv[]) {
-
-  if (argc > 3 && opt_exists(argv, argv + argc, "-p")) {
+  if (argc > 3 && opt_exists(argv, argv + argc, "-dec")) {
     std::ifstream f_in{argv[2]};
     if (!f_in.is_open()) {
       throw 0;
@@ -132,14 +208,27 @@ int main(int argc, char *argv[]) {
     std::string input{std::istreambuf_iterator<char>(f_in),
                       std::istreambuf_iterator<char>()};
     f_in.close();
-
     std::ofstream f_out{argv[3]};
     if (!f_out.is_open()) {
       throw 0;
     }
     f_out << decrypt_pt(input);
     f_out.close();
-  } else if (argc > 2 && opt_exists(argv, argv + argc, "-l")) {
+  } else if (argc > 2 && opt_exists(argv, argv + argc, "-enc")) {
+    std::ifstream f_in{argv[2]};
+    if (!f_in.is_open()) {
+      throw 0;
+    }
+    std::string input{std::istreambuf_iterator<char>(f_in),
+                      std::istreambuf_iterator<char>()};
+    f_in.close();
+    std::ofstream f_out{argv[3]};
+    if (!f_out.is_open()) {
+      throw 0;
+    }
+    f_out << encrypt_pt(input);
+    f_out.close();
+  } else if (argc > 2 && opt_exists(argv, argv + argc, "-logs")) {
     std::ifstream f_in{argv[2]};
     if (!f_in.is_open()) {
       throw 0;
@@ -149,7 +238,7 @@ int main(int argc, char *argv[]) {
       std::cout << decrypt_logs(line) << std::endl;
     }
     f_in.close();
-  } else if (argc > 2 && opt_exists(argv, argv + argc, "-n")) {
+  } else if (argc > 2 && opt_exists(argv, argv + argc, "-nets")) {
     std::ifstream f_in{argv[2]};
     if (!f_in.is_open()) {
       throw 0;
@@ -158,6 +247,14 @@ int main(int argc, char *argv[]) {
                       std::istreambuf_iterator<char>()};
     std::cout << decrypt_nets(input) << std::endl;
     f_in.close();
+  } else if (argc > 2 && opt_exists(argv, argv + argc, "-sm")) {
+    std::ifstream f_in{argv[2]};
+    if (!f_in.is_open()) {
+      throw 0;
+    }
+    std::string input{std::istreambuf_iterator<char>(f_in),
+                      std::istreambuf_iterator<char>()};
+    std::cout << decrypt_pts(input) << std::endl;
+    f_in.close();
   }
-
 }
