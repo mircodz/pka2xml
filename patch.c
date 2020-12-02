@@ -31,35 +31,42 @@ static int check(struct process process, struct point patch[], int s);
 static pid_t pidof(char *name);
 
 struct point patch[] = {
-  { 0xdff5c0, 0x40, 0x90 },
-  { 0xdff5c1, 0x84, 0x90 },
-  { 0xdff5c2, 0xf6, 0x90 },
-  { 0xdff5c3, 0x75, 0x90 },
-  { 0xdff5c4, 0x0b, 0x90 },
-  { 0xdff5c5, 0x31, 0x90 },
-  { 0xdff5c6, 0xf6, 0x90 },
-  { 0xdff5c7, 0xe9, 0x90 },
-  { 0xdff5c8, 0xf4, 0x90 },
-  { 0xdff5c9, 0xfe, 0x90 },
-  { 0xdff5ca, 0xff, 0x90 },
-  { 0xdff5cb, 0xff, 0x90 },
-  { 0xdff5cc, 0x0f, 0x90 },
-  { 0xdff5cd, 0x1f, 0x90 },
-  { 0xdff5ce, 0x40, 0x90 },
-  { 0xdff5cf, 0x00, 0x90 },
+  { 0x0dff5c0, 0x40, 0xbe },
+  { 0x0dff5c1, 0x84, 0x02 },
+  { 0x0dff5c2, 0xf6, 0x00 },
+  { 0x0dff5c3, 0x75, 0x00 },
+  { 0x0dff5c4, 0x0b, 0x00 },
+  { 0x0dff5c5, 0x31, 0xe9 },
+  { 0x0dff5c6, 0xf6, 0xf7 },
+  { 0x0dff5c7, 0xe9, 0xfe },
+  { 0x0dff5c8, 0xf4, 0xff },
+  { 0x0dff5c9, 0xfe, 0xff },
+  { 0x360fcba, 0x74, 0x90 },
+  { 0x360fcbb, 0x44, 0x90 },
+  { 0x360fcbc, 0x0f, 0x90 },
+  { 0x360fcbd, 0x1f, 0x90 },
+  { 0x360fcbe, 0x40, 0x90 },
+  { 0x360fcbf, 0x00, 0x90 },
+  { 0x3b514a0, 0x41, 0xb8 },
+  { 0x3b514a1, 0x57, 0x00 },
+  { 0x3b514a2, 0x41, 0x00 },
+  { 0x3b514a3, 0x56, 0x00 },
+  { 0x3b514a4, 0x41, 0x00 },
+  { 0x3b514a5, 0x55, 0xc3 },
+  { 0x3b5702c, 0x0f, 0x90 },
+  { 0x3b5702d, 0x84, 0x90 },
+  { 0x3b5702e, 0x0c, 0x90 },
+  { 0x3b5702f, 0x1a, 0x90 },
+  { 0x3b57030, 0x00, 0x90 },
+  { 0x3b57031, 0x00, 0x90 },
 };
 
 static int hexdigit (char c) {
   switch (c) {
-    case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
-      return c - '0';
-    case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-      return 10 + c - 'A';
-    case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-      return 10 + c - 'a';
-    default:
-      return -1;
+    case '0' ... '9': return c - '0';
+    case 'A' ... 'F': return 10 + c - 'A';
+    case 'a' ... 'f': return 10 + c - 'a';
+    default: return -1;
   }
 }
 
@@ -144,12 +151,27 @@ static pid_t pidof(char *name) {
   return atoi(cmd);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   struct process process;
 
-  process = attach("PacketTracer7");
-  apply(process, patch, SIZEOF(patch));
+  const char *path = "/opt/packettracer/bin";
+  char filepath[512];
+  snprintf(filepath, sizeof(filepath), "%s/PacketTracer7", path);
 
-  process = attach("PacketTracer7");
-  check(process, patch, SIZEOF(patch));
+  int pid = fork();
+  if (pid < 0) {
+  } else if (!pid) {
+    chdir(path);
+    system(filepath);
+  } else {
+    process = attach("PacketTracer7");
+    apply(process, patch, SIZEOF(patch));
+
+    process = attach("PacketTracer7");
+    check(process, patch, SIZEOF(patch));
+
+    wait(0);
+    exit(0);
+  }
+
 }
