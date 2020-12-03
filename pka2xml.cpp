@@ -12,7 +12,7 @@
 
 #include <zlib.h>
 
-#include "base64.h"
+#include "vendor/cpp-base64/base64.h"
 
 /// TODO documentation
 std::string uncompress(const unsigned char* data, int nbytes) {
