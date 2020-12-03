@@ -17,9 +17,9 @@
 /// TODO documentation
 std::string uncompress(const unsigned char* data, int nbytes) {
   unsigned long len = (data[0] << 24)
-                    | (data[1] << 16)
-                    | (data[2] <<  8)
-                    | (data[3]      );
+        | (data[1] << 16)
+        | (data[2] <<  8)
+        | (data[3]      );
 
   std::vector<unsigned char> buf(len);
 
@@ -44,12 +44,11 @@ std::string decrypt(
   typename CryptoPP::EAX<Algorithm>::Decryption d;
   d.SetKeyWithIV(key, key_size, iv, iv_size);
 
-  std::string processed;
+  int length = input.size();
+  std::string processed(length, '\0');
   std::string output;
 
   // Stage 1 - deobfuscation
-  int length = input.size();
-  processed.resize(length);
   for (int i = 0; i < length; i++) {
     processed[i] = input[length + ~i] ^ (length - i * length);
   }
@@ -95,7 +94,7 @@ std::string decrypt(
 ///         b = output string
 ///
 /// 4. decompression: zlib compression
-std::string decrypt_pt(const std::string &input) {
+std::string decrypt_pka(const std::string &input) {
   static const unsigned char key[16] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
   static const unsigned char iv[16]  = { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 };
 
@@ -121,7 +120,7 @@ std::string decrypt_nets(const std::string &input) {
 
 /// TODO documentation
 /// TODO reverse second part of decoding
-std::string decrypt_pts(const std::string &input) {
+std::string decrypt_sm(const std::string &input) {
   static const unsigned char key[16] = { 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18 };
   static const unsigned char iv[16]  = { 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254, 254 };
 
@@ -153,6 +152,7 @@ std::string compress(const unsigned char* data, int nbytes) {
   return std::string(reinterpret_cast<const char*>(buf.data()), buf.size());
 }
 
+/// TODO documentation
 template <typename Algorithm>
 std::string encrypt(
     const std::string &input,
@@ -182,79 +182,111 @@ std::string encrypt(
   int length = encrypted.size();
   output.resize(length);
   for (int i = 0; i < encrypted.size(); i++) {
+    // I lost an entire hour trying to figure out why this wouldn't work.
     output[length + ~i] = encrypted[i] ^ (length - i * length);
   }
 
   return output;
 }
 
-std::string encrypt_pt(const std::string &input) {
+/// \see decrypt_pka
+std::string encrypt_pka(const std::string &input) {
   static const unsigned char key[16] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
   static const unsigned char iv[16]  = { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 };
 
   return encrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv));
 }
 
+/// TODO documentation
 bool opt_exists(char** begin, char** end, const std::string& option) {
     return std::find(begin, end, option) != end;
 }
 
+void die(const char *message) {
+  std::fprintf(stderr, "%s", message);
+  std::exit(1);
+}
+
+void help() {
+  std::printf("pka2xml\n");
+  std::printf("\t-d decrypt pka to xml\n");
+  std::printf("\t-e encrypt xml to pka\n");
+  std::printf("\t-nets decrypt packet tracer net file\n");
+  std::printf("\t-logs decrypt packet tracer log file\n");
+  std::printf("\t-pts  decrypt packet tracer script module (WIP)\n");
+  std::exit(1);
+}
+
 int main(int argc, char *argv[]) {
-  if (argc > 3 && opt_exists(argv, argv + argc, "-dec")) {
-    std::ifstream f_in{argv[2]};
-    if (!f_in.is_open()) {
-      throw 0;
-    }
-    std::string input{std::istreambuf_iterator<char>(f_in),
-                      std::istreambuf_iterator<char>()};
-    f_in.close();
-    std::ofstream f_out{argv[3]};
-    if (!f_out.is_open()) {
-      throw 0;
-    }
-    f_out << decrypt_pt(input);
-    f_out.close();
-  } else if (argc > 2 && opt_exists(argv, argv + argc, "-enc")) {
-    std::ifstream f_in{argv[2]};
-    if (!f_in.is_open()) {
-      throw 0;
-    }
-    std::string input{std::istreambuf_iterator<char>(f_in),
-                      std::istreambuf_iterator<char>()};
-    f_in.close();
-    std::ofstream f_out{argv[3]};
-    if (!f_out.is_open()) {
-      throw 0;
-    }
-    f_out << encrypt_pt(input);
-    f_out.close();
-  } else if (argc > 2 && opt_exists(argv, argv + argc, "-logs")) {
-    std::ifstream f_in{argv[2]};
-    if (!f_in.is_open()) {
-      throw 0;
-    }
-    std::string line;
-    while (std::getline(f_in, line)) {
-      std::cout << decrypt_logs(line) << std::endl;
-    }
-    f_in.close();
-  } else if (argc > 2 && opt_exists(argv, argv + argc, "-nets")) {
-    std::ifstream f_in{argv[2]};
-    if (!f_in.is_open()) {
-      throw 0;
-    }
-    std::string input{std::istreambuf_iterator<char>(f_in),
-                      std::istreambuf_iterator<char>()};
-    std::cout << decrypt_nets(input) << std::endl;
-    f_in.close();
-  } else if (argc > 2 && opt_exists(argv, argv + argc, "-sm")) {
-    std::ifstream f_in{argv[2]};
-    if (!f_in.is_open()) {
-      throw 0;
-    }
-    std::string input{std::istreambuf_iterator<char>(f_in),
-                      std::istreambuf_iterator<char>()};
-    std::cout << decrypt_pts(input) << std::endl;
-    f_in.close();
+  if (argc == 1) {
+    help();
   }
+
+  // TODO graceful error checking
+  try {
+    if (argc > 3 && opt_exists(argv, argv + argc, "-d")) {
+      std::ifstream f_in{argv[2]};
+      if (!f_in.is_open()) {
+        die("error opening file");
+      }
+      std::string input{std::istreambuf_iterator<char>(f_in),
+                        std::istreambuf_iterator<char>()};
+      f_in.close();
+      std::ofstream f_out{argv[3]};
+      if (!f_out.is_open()) {
+        die("error opening file");
+      }
+      f_out << decrypt_pka(input);
+      f_out.close();
+    } else if (argc > 3 && opt_exists(argv, argv + argc, "-e")) {
+      std::ifstream f_in{argv[2]};
+      if (!f_in.is_open()) {
+        die("error opening file");
+      }
+      std::string input{std::istreambuf_iterator<char>(f_in),
+                        std::istreambuf_iterator<char>()};
+      f_in.close();
+      std::ofstream f_out{argv[3]};
+      if (!f_out.is_open()) {
+        die("error opening file");
+      }
+      f_out << encrypt_pka(input);
+      f_out.close();
+    } else if (argc > 2 && opt_exists(argv, argv + argc, "-logs")) {
+      std::ifstream f_in{argv[2]};
+      if (!f_in.is_open()) {
+        die("error opening file");
+      }
+      std::string line;
+      while (std::getline(f_in, line)) {
+        std::cout << decrypt_logs(line) << std::endl;
+      }
+      f_in.close();
+    } else if (argc > 2 && opt_exists(argv, argv + argc, "-nets")) {
+      std::ifstream f_in{argv[2]};
+      if (!f_in.is_open()) {
+        die("error opening file");
+      }
+      std::string input{std::istreambuf_iterator<char>(f_in),
+            std::istreambuf_iterator<char>()};
+      std::cout << decrypt_nets(input) << std::endl;
+      f_in.close();
+    } else if (argc > 3 && opt_exists(argv, argv + argc, "-pts")) {
+      std::ifstream f_in{argv[2]};
+      if (!f_in.is_open()) {
+        die("error opening file");
+      }
+      std::string input{std::istreambuf_iterator<char>(f_in),
+                        std::istreambuf_iterator<char>()};
+      std::ofstream f_out{argv[3]};
+      if (!f_out.is_open()) {
+        die("error opening file");
+      }
+      f_out << decrypt_sm(input);
+      f_out.close();
+    }
+  } catch (int err) {
+    die("error");
+  }
+
 }
