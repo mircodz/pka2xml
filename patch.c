@@ -31,29 +31,29 @@ static int check(struct process process, struct point patch[], int s);
 static pid_t pidof(char *name);
 
 struct point patch[] = {
-  { 0x0dff5c0, 0x40, 0xbe },
+  { 0x0dff5c0, 0x40, 0xbe }, // mov eax,2
   { 0x0dff5c1, 0x84, 0x02 },
   { 0x0dff5c2, 0xf6, 0x00 },
   { 0x0dff5c3, 0x75, 0x00 },
   { 0x0dff5c4, 0x0b, 0x00 },
-  { 0x0dff5c5, 0x31, 0xe9 },
+  { 0x0dff5c5, 0x31, 0xe9 }, // jmp rel8
   { 0x0dff5c6, 0xf6, 0xf7 },
   { 0x0dff5c7, 0xe9, 0xfe },
   { 0x0dff5c8, 0xf4, 0xff },
   { 0x0dff5c9, 0xfe, 0xff },
-  { 0x360fcba, 0x74, 0x90 },
+  { 0x360fcba, 0x74, 0x90 }, // nops
   { 0x360fcbb, 0x44, 0x90 },
   { 0x360fcbc, 0x0f, 0x90 },
   { 0x360fcbd, 0x1f, 0x90 },
   { 0x360fcbe, 0x40, 0x90 },
   { 0x360fcbf, 0x00, 0x90 },
-  { 0x3b514a0, 0x41, 0xb8 },
+  { 0x3b514a0, 0x41, 0xb8 }, // mov eax, 0
   { 0x3b514a1, 0x57, 0x00 },
   { 0x3b514a2, 0x41, 0x00 },
   { 0x3b514a3, 0x56, 0x00 },
   { 0x3b514a4, 0x41, 0x00 },
-  { 0x3b514a5, 0x55, 0xc3 },
-  { 0x3b5702c, 0x0f, 0x90 },
+  { 0x3b514a5, 0x55, 0xc3 }, // ret
+  { 0x3b5702c, 0x0f, 0x90 }, // nops
   { 0x3b5702d, 0x84, 0x90 },
   { 0x3b5702e, 0x0c, 0x90 },
   { 0x3b5702f, 0x1a, 0x90 },
@@ -109,6 +109,10 @@ static struct process attach(char *name) {
   return process;
 }
 
+static void detach(struct process process) { 
+  close(process.fd);
+}
+
 static int apply(struct process process, struct point patch[], int s) {
   ptrace(PTRACE_ATTACH, process.pid, 0, 0);
   waitpid(process.pid, NULL, 0);
@@ -121,8 +125,8 @@ static int apply(struct process process, struct point patch[], int s) {
     int err = pwrite(process.fd, &byte, 1, process.offset + patch[i].addr);
     if (err == -1) printf("err\n");
   }
+
   ptrace(PTRACE_DETACH, process.pid, 0, 0);
-  close(process.fd);
   return 0;
 }
 
@@ -137,8 +141,8 @@ static int check(struct process process, struct point patch[], int s) {
 
     printf("0x%x %d\n", (unsigned)patch[i].addr, byte == patch[i].b);
   }
+
   ptrace(PTRACE_DETACH, process.pid, 0, 0);
-  close(process.fd);
   return 0;
 }
 
@@ -154,22 +158,21 @@ static pid_t pidof(char *name) {
 int main(int argc, char *argv[]) {
   struct process process;
 
-  const char *path = "/opt/packettracer/bin";
+  const char *path = "/opt/packettracer/bin/";
   char filepath[512];
-  snprintf(filepath, sizeof(filepath), "%s/PacketTracer7", path);
+  snprintf(filepath, sizeof(filepath), "LD_LIBRARY_PATH=%s %sPacketTracer7", path, path);
 
   int pid = fork();
   if (pid < 0) {
   } else if (!pid) {
     chdir(path);
+		printf("executing %s", filepath);
     system(filepath);
   } else {
     process = attach("PacketTracer7");
     apply(process, patch, SIZEOF(patch));
-
-    process = attach("PacketTracer7");
     check(process, patch, SIZEOF(patch));
-
+    detach(process);
     wait(0);
     exit(0);
   }
