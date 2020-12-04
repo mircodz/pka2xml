@@ -2,6 +2,7 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/twofish.h>
 #include <cryptopp/cast.h>
+#include <cryptopp/base64.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -12,8 +13,6 @@
 
 #include <zlib.h>
 
-#include "vendor/cpp-base64/base64.h"
-
 /// TODO documentation
 std::string uncompress(const unsigned char* data, int nbytes) {
   unsigned long len = (data[0] << 24)
@@ -23,7 +22,7 @@ std::string uncompress(const unsigned char* data, int nbytes) {
 
   std::vector<unsigned char> buf(len);
 
-  int res = uncompress(buf.data(), &len, data + 4, nbytes - 4);
+  int res = ::uncompress(buf.data(), &len, data + 4, nbytes - 4);
 
   if (res != Z_OK) {
     throw res;
@@ -106,7 +105,8 @@ std::string decrypt_logs(const std::string &input) {
   static const unsigned char key[16] = { 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186 };
   static const unsigned char iv[16]  = { 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190 };
 
-  std::string decoded = base64_decode(input);
+  std::string decoded;
+  CryptoPP::StringSource ss(input, true, new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
   return decrypt<CryptoPP::Twofish>(decoded, key, sizeof(key), iv, sizeof(iv), /* skip_last_stages */ true);
 }
 
