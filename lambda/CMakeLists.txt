@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.5)
+project(pka2xml LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/lambda-runtime;${CMAKE_PREFIX_PATH}")
+
+find_package(ZLIB)
+find_package(aws-lambda-runtime REQUIRED)
+find_package(AWSSDK COMPONENTS core)
+add_executable(${PROJECT_NAME} "main.cpp")
+target_link_libraries(${PROJECT_NAME} PUBLIC AWS::aws-lambda-runtime)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${AWSSDK_LINK_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC re2)
+target_link_libraries(${PROJECT_NAME} PUBLIC ZLIB::ZLIB)
+target_link_libraries(${PROJECT_NAME} PUBLIC cryptopp)
+aws_lambda_package_target(${PROJECT_NAME})
