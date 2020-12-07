@@ -182,7 +182,7 @@ std::string encrypt(
   int length = encrypted.size();
   output.resize(length);
   for (int i = 0; i < encrypted.size(); i++) {
-    // I lost an entire hour trying to figure out why this wouldn't work.
+    // I lost an entire hour trying to figure out why this wouldn't work. Had to swap the indexes...
     output[length + ~i] = encrypted[i] ^ (length - i * length);
   }
 
@@ -198,7 +198,7 @@ std::string encrypt_pka(const std::string &input) {
 }
 
 /// TODO documentation
-bool opt_exists(char** begin, char** end, const std::string& option) {
+bool opt_exists(char **begin, char **end, const std::string &option) {
     return std::find(begin, end, option) != end;
 }
 
@@ -208,12 +208,20 @@ void die(const char *message) {
 }
 
 void help() {
-  std::printf("pka2xml\n");
-  std::printf("\t-d decrypt pka to xml\n");
-  std::printf("\t-e encrypt xml to pka\n");
-  std::printf("\t-nets decrypt packet tracer net file\n");
-  std::printf("\t-logs decrypt packet tracer log file\n");
-  std::printf("\t-pts  decrypt packet tracer script module (WIP)\n");
+  std::printf(R"(usage: pka2xml [ options ]
+
+where options are:
+  -d <in> <out>      decrypt pka/pkt to xml
+  -e <in> <out>      decrypt pka/pkt to xml
+  -nets <in>         decrypt packet tracer "nets" file
+  -logs <in>         decrypt packet tracer log file
+
+examples:
+  pka2xml -d foobar.pka foobar.xml
+  pka2xml -e foobar.xml foobar.pka
+  pka2xml -nets $HOME/packettracer/nets
+  pka2xml -logs $HOME/packettracer/pt_12.05.2020_21.07.17.338.log
+)");
   std::exit(1);
 }
 
@@ -227,35 +235,35 @@ int main(int argc, char *argv[]) {
     if (argc > 3 && opt_exists(argv, argv + argc, "-d")) {
       std::ifstream f_in{argv[2]};
       if (!f_in.is_open()) {
-        die("error opening file");
+        die("error opening input file");
       }
       std::string input{std::istreambuf_iterator<char>(f_in),
                         std::istreambuf_iterator<char>()};
       f_in.close();
       std::ofstream f_out{argv[3]};
       if (!f_out.is_open()) {
-        die("error opening file");
+        die("error opening output file");
       }
       f_out << decrypt_pka(input);
       f_out.close();
     } else if (argc > 3 && opt_exists(argv, argv + argc, "-e")) {
       std::ifstream f_in{argv[2]};
       if (!f_in.is_open()) {
-        die("error opening file");
+        die("error opening input file");
       }
       std::string input{std::istreambuf_iterator<char>(f_in),
                         std::istreambuf_iterator<char>()};
       f_in.close();
       std::ofstream f_out{argv[3]};
       if (!f_out.is_open()) {
-        die("error opening file");
+        die("error opening output file");
       }
       f_out << encrypt_pka(input);
       f_out.close();
     } else if (argc > 2 && opt_exists(argv, argv + argc, "-logs")) {
       std::ifstream f_in{argv[2]};
       if (!f_in.is_open()) {
-        die("error opening file");
+        die("error opening input file");
       }
       std::string line;
       while (std::getline(f_in, line)) {
@@ -265,28 +273,16 @@ int main(int argc, char *argv[]) {
     } else if (argc > 2 && opt_exists(argv, argv + argc, "-nets")) {
       std::ifstream f_in{argv[2]};
       if (!f_in.is_open()) {
-        die("error opening file");
-      }
-      std::string input{std::istreambuf_iterator<char>(f_in),
-            std::istreambuf_iterator<char>()};
-      std::cout << decrypt_nets(input) << std::endl;
-      f_in.close();
-    } else if (argc > 3 && opt_exists(argv, argv + argc, "-pts")) {
-      std::ifstream f_in{argv[2]};
-      if (!f_in.is_open()) {
-        die("error opening file");
+        die("error opening input file");
       }
       std::string input{std::istreambuf_iterator<char>(f_in),
                         std::istreambuf_iterator<char>()};
-      std::ofstream f_out{argv[3]};
-      if (!f_out.is_open()) {
-        die("error opening file");
-      }
-      f_out << decrypt_sm(input);
-      f_out.close();
+      std::cout << decrypt_nets(input) << std::endl;
+      f_in.close();
+    } else {
+      help();
     }
   } catch (int err) {
-    die("error");
+    die("error during the processing of the files, make sure the input files are valid");
   }
-
 }
