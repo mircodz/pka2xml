@@ -13,6 +13,8 @@ async function loadFile(file) {
 }
 
 async function Decode() {
+  document.querySelector('#loading').style["display"] = "inline";
+
   const file = document.querySelector('#file').files[0];
   fetch('https://1nlsyfjbcb.execute-api.eu-south-1.amazonaws.com/default/pka2xml', {
     method: 'POST',
@@ -34,13 +36,18 @@ async function Decode() {
     a.href = window.URL.createObjectURL(b);
     a.click();
 
+    document.querySelector('#loading').style["display"] = "none";
     editor.setValue(str, -1);
   }).catch(err => {
       console.log(`err: ${err}`);
+  }).finally(() => {
+    document.querySelector('#loading').style["display"] = "none";
   });
 }
 
 async function Retrofit() {
+  document.querySelector('#loading').style["display"] = "inline";
+
   const file = document.querySelector('#file').files[0];
   fetch('https://1nlsyfjbcb.execute-api.eu-south-1.amazonaws.com/default/pka2xml', {
     method: 'POST',
@@ -58,6 +65,8 @@ async function Retrofit() {
     a.click();
   }).catch(err => {
     console.log(`err: ${err}`);
+  }).finally(() => {
+    document.querySelector('#loading').style["display"] = "none";
   });
 }
 
@@ -68,6 +77,8 @@ async function Encode() {
     return;
   }
 
+  document.querySelector('#loading').style["display"] = "inline";
+
   const compressed = pako.deflate(new TextEncoder().encode(str));
   const b = new Blob([compressed], { type: 'application/octet-stream' });
 
@@ -75,7 +86,7 @@ async function Encode() {
     method: 'POST',
     body: JSON.stringify({
       // encode to base64 and discard url path
-      file: (await toBase64(b)).substring(30),
+      file: (await toBase64(b)).substring(37),
       action: 'encode',
       length: str.length,
     })
@@ -88,10 +99,27 @@ async function Encode() {
     a.click();
   }).catch(err => {
     console.log(`err: ${err}`);
+  }).finally(() => {
+    document.querySelector('#loading').style["display"] = "none";
   });
 }
 
-async function Open() {
+async function Update() {
   const file = document.querySelector('#file').files[0];
-  editor.setValue(await loadFile(file), -1);
+  if (file.name.endsWith('.pka')) {
+    document.querySelector('#decode').disabled = false;
+    document.querySelector('#retrofit').disabled = false;
+    document.querySelector('#encode').disabled = true;
+    editor.setValue("", -1);
+  } else if (file.name.endsWith('.xml')) {
+    document.querySelector('#decode').disabled = true;
+    document.querySelector('#retrofit').disabled = true;
+    document.querySelector('#encode').disabled = false;
+    editor.setValue(await loadFile(file), -1);
+  } else {
+    document.querySelector('#decode').disabled = true;
+    document.querySelector('#retrofit').disabled = true;
+    document.querySelector('#encode').disabled = true;
+    editor.setValue("", -1);
+  }
 }

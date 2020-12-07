@@ -3,20 +3,41 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.2/pako.min.js" integrity="sha512-IjkvjWp4tSkhkQRb9gFwCcMhBWZLPKc7Zo8ifb6qxORyehV072QgRVG3F0fwAaJh0fnEFNLc2+XggoC5wvW24g==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
   <style type="text/css" media="screen">
-    #editor { 
-      height: 600px;
-      width: 800px;
+    html {
+      overflow-y: hidden;
+    }
+    body {
+      height: 100%;
+    }
+    #editor {
+      height: 100%;
+      width: 100%;
+    }
+    section {
+      display: flex;
+      flex-direction: column;
+      height: 98%;
+    }
+    p {
+      display: none;
+      padding-left: 10px;
     }
   </style>
   <script src="main.js"></script>
 </head>
 <body>
-  <input type="file" id="file">
-  <button onclick="Open()">Open</button>
-  <button onclick="Decode()">Decode</button>
-  <button onclick="Encode()">Encode</button>
-  <button onclick="Retrofit()">Retrofit</button>
-  <div id="editor"></div>
+  <section>
+    <div>
+      <input type="file" id="file" onchange="Update()">
+      <hr>
+      <button disabled id="encode" onclick="Encode()">Encode</button>
+      <button disabled id="decode" onclick="Decode()">Decode</button>
+      <button disabled id="retrofit" onclick="Retrofit()">Retrofit</button>
+      <p id="loading">Loading...</p>
+      <hr>
+    </div>
+    <div id="editor"></div>
+  </section>
   <script>
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/chrome");
