@@ -1,6 +1,19 @@
 import xml.etree.ElementTree as ET
+import os
+import re
+import sys
+import string
 
-root = ET.parse('output.xml').getroot()
+if len(sys.argv) < 2: exit(1)
+
+filepath = sys.argv[1]
+
+with open(filepath) as f:
+  data = f.read()
+
+data = re.sub(f'[^{re.escape(string.printable)}]', '', data)
+
+root = ET.fromstring(data)
 
 def get_value(node, path):
   v = node.find(path)
@@ -9,9 +22,13 @@ def get_value(node, path):
 class Port:
 
   def __init__(self, node, index, parent_type):
-    self.type = get_value(node, 'TYPE')
-    self.mac  = get_value(node, 'MACADDRESS')
-    self.ip   = get_value(node, 'IP')
+    self.type   = get_value(node, 'TYPE')
+    self.mac    = get_value(node, 'MACADDRESS')
+    self.ip     = get_value(node, 'IP')
+    self.dhcp   = get_value(node, 'PORT_DHCP_ENABLE')
+
+    if self.dhcp == 'true':
+      self.ip = '<DHCP>'
 
     main_switch = {
       'Pc': 1,
@@ -52,6 +69,7 @@ class Port:
         'eSerial': '{}',
       },
     }
+
 
     if self.type:
       self.name = switch[main_switch[parent_type]][self.type].format(index)
@@ -107,19 +125,53 @@ class Devices:
     return self.devices[int(index)]
 
 devices = Devices(root)
+
+def traverse(nodes, fn, depth = 0):
+  for node in nodes:
+    fn(node, depth)
+    if node.findall('NODE'):
+      traverse(node.findall('NODE'), fn, depth + 1)
+
+comparisons = root.findall('COMPARISONS/NODE')
+setup = root.findall('INITIALSETUP/NODE')
+
+def printer(node, depth):
+  if node.find('NAME').attrib['checkType'] == '1':
+    print(' ' * depth + node.find('NAME').text, node.find('NAME').attrib['nodeValue'])
+  if node.find('NAME').attrib['checkType'] == '2':
+    print(' ' * depth + node.find('NAME').text, node.find('NAME').attrib['nodeValue'])
+
+traverse(comparisons, printer)
+traverse(setup, printer)
+
 links = root.find('PACKETTRACER5/NETWORK/LINKS')
 
 with open('network.dot', 'w') as f:
   f.write('graph G {\n')
-  f.write('\tnode [shape=record]\n\n')
+  f.write('\tnode [shape=record]\n')
+  f.write('\tgraph [pad="0.5", nodesep="1"];\n\n')
   for link in links:
-    fr = devices.by_id(link.find('CABLE/FROM').text)
-    to = devices.by_id(link.find('CABLE/TO').text)
+    try:
+      fr = devices.by_index(link.find('CABLE/FROM').text)
+      to = devices.by_index(link.find('CABLE/TO').text)
+    except:
+      fr = devices.by_id(link.find('CABLE/FROM').text)
+      to = devices.by_id(link.find('CABLE/TO').text)
+
     fr_port = fr.ports.by_name(link.findall('CABLE/PORT')[0].text)
     to_port = to.ports.by_name(link.findall('CABLE/PORT')[1].text)
+
+    if fr_port is None:
+      print(fr.ports.ports, link.findall('CABLE/PORT')[0].text, fr.type)
+
+    if to_port is None:
+      print(to.ports.ports, link.findall('CABLE/PORT')[1].text, to.type)
+
+    fr_ip = fr_port.ip if fr_port else ''
+    to_ip = to_port.ip if to_port else ''
+
     f.write('\t"{}"--"{}" [taillabel="{}"; headlabel="{}"];\n'.format(
-        fr.name,
-        to.name,
-        fr_port.ip if fr_port else '',
-        to_port.ip if to_port else ''))
+        fr.name, to.name, fr_ip, to_ip))
   f.write('}')
+
+os.system('dot -Tpng network.dot -o network.png')
