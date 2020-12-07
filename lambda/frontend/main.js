@@ -19,8 +19,7 @@ async function Decode() {
   fetch('https://1nlsyfjbcb.execute-api.eu-south-1.amazonaws.com/default/pka2xml', {
     method: 'POST',
     body: JSON.stringify({
-      // encode to base64 and discard url path
-      file: (await toBase64(file)).substring(30),
+      file: await toBase64(file),
       action: 'decode',
     })
   }).then(response => response.text())
@@ -52,8 +51,7 @@ async function Retrofit() {
   fetch('https://1nlsyfjbcb.execute-api.eu-south-1.amazonaws.com/default/pka2xml', {
     method: 'POST',
     body: JSON.stringify({
-      // encode to base64 and discard url path
-      file: (await toBase64(file)).substring(30),
+      file: await toBase64(file),
       action: 'retrofit',
     })
   }).then(response => response.text())
@@ -85,8 +83,7 @@ async function Encode() {
   fetch('https://1nlsyfjbcb.execute-api.eu-south-1.amazonaws.com/default/pka2xml', {
     method: 'POST',
     body: JSON.stringify({
-      // encode to base64 and discard url path
-      file: (await toBase64(b)).substring(37),
+      file: await toBase64(b),
       action: 'encode',
       length: str.length,
     })

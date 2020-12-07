@@ -18,10 +18,13 @@
       flex-direction: column;
       height: 98%;
     }
-    p {
+    #loading {
       display: none;
       padding-left: 10px;
     }
+		#info {
+			float: right;
+		}
   </style>
   <script src="main.js"></script>
 </head>
@@ -29,7 +32,12 @@
   <section>
     <div>
       <input type="file" id="file" onchange="Update()">
-      <hr>
+			<div id="info">
+				Source code:
+				<a href="https://github.com/mircodezorzi/pka2xml/blob/master/lambda/main.cpp" target="_blank">backend</a>
+				<a href="https://github.com/mircodezorzi/pka2xml/blob/master/lambda/frontend/main.js" target="_blank">frontend</a>
+			</div>
+			<hr>
       <button disabled id="encode" onclick="Encode()">Encode</button>
       <button disabled id="decode" onclick="Decode()">Decode</button>
       <button disabled id="retrofit" onclick="Retrofit()">Retrofit</button>

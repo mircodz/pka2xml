@@ -202,6 +202,8 @@ invocation_response my_handler(invocation_request const& request) {
   }
 
   auto file = v.GetString("file");
+  file.replace(0, file.find(",") + 1, "");
+
   auto action = v.GetString("action");
 
   try {
