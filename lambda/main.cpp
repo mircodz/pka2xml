@@ -20,7 +20,7 @@ std::string compress(const unsigned char* data, int nbytes) {
   buf.resize(len + 4);
 
   int res = ::compress2(buf.data() + 4, &len, data, nbytes, -1);
-	if (res != Z_OK) throw res;
+  if (res != Z_OK) throw res;
 
   // need to shrink buffer to appropriate size after compression
   buf.resize(len + 4);
@@ -33,23 +33,33 @@ std::string compress(const unsigned char* data, int nbytes) {
   return std::string(reinterpret_cast<const char*>(buf.data()), buf.size());
 }
 
-std::string uncompress(const unsigned char* data, int nbytes, unsigned long llen = 0) {
+std::string uncompress(const unsigned char* data, int nbytes) {
   unsigned long len = (data[0] << 24)
         | (data[1] << 16)
         | (data[2] <<  8)
         | (data[3]      );
 
-	std::vector<unsigned char> buf(llen ? llen : len);
+  std::vector<unsigned char> buf(len);
 
-	if (llen) {
-		int res = ::uncompress(buf.data(), &llen, data, nbytes);
-		if (res != Z_OK) throw res;
-	} else {
-		int res = ::uncompress(buf.data(), &len, data + 4, nbytes - 4);
-		if (res != Z_OK) throw res;
-	}
+  int res = ::uncompress(buf.data(), &len, data + 4, nbytes - 4);
 
-  return std::string(reinterpret_cast<const char*>(buf.data()));
+  if (res != Z_OK) {
+    throw res;
+  }
+
+  return std::string(reinterpret_cast<const char*>(buf.data()), buf.size());
+}
+
+std::string uncompress(const unsigned char* data, int nbytes, unsigned long len) {
+  std::vector<unsigned char> buf(len);
+
+  int res = ::uncompress(buf.data(), &len, data, nbytes);
+
+  if (res != Z_OK) {
+    throw res;
+  }
+
+  return std::string(reinterpret_cast<const char*>(buf.data()), buf.size());
 }
 
 std::string decrypt(const std::string &input, bool skip_decompression = false) {
@@ -78,11 +88,11 @@ std::string decrypt(const std::string &input, bool skip_decompression = false) {
     output[i] = output[i] ^ (output.size() - i);
   }
 
-	if (skip_decompression) {
-		return std::string(output.data() + 4, output.size() - 4);
-	} else {
-		return uncompress(reinterpret_cast<const unsigned char*>(output.data()), output.size());
-	}
+  if (skip_decompression) {
+    return std::string(output.data() + 4, output.size() - 4);
+  } else {
+    return uncompress(reinterpret_cast<const unsigned char*>(output.data()), output.size());
+  }
 }
 
 std::string encrypt(const std::string &input) {
@@ -93,7 +103,7 @@ std::string encrypt(const std::string &input) {
   e.SetKeyWithIV(key, sizeof(key), iv, sizeof(iv));
 
   // Stage 1 - compression
-	std::string compressed = compress(reinterpret_cast<const unsigned char*>(input.data()), input.size());
+  std::string compressed = compress(reinterpret_cast<const unsigned char*>(input.data()), input.size());
 
   // Stage 2 - obfuscation
   for (int i = 0; i < compressed.size(); i++) {
@@ -124,107 +134,96 @@ using namespace aws::lambda_runtime;
 using namespace Aws::Utils::Json;
 
 std::string retrofit(const std::string &file) {
-	std::string decoded, result;
+  std::string decoded, result;
 
-	{
-		CryptoPP::StringSource ss(file, true,
-			new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
-	}
+  CryptoPP::StringSource(file, true,
+    new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
 
-	auto decrypted = pka2xml::decrypt(decoded);
-	re2::RE2::GlobalReplace(&decrypted, R"(<VERSION>\d\.\d\.\d\.\d{4}</VERSION>)", "<VERSION>6.0.1.0000</VERSION>");
-	re2::RE2::GlobalReplace(&decrypted, "<ADDITIONAL_INFO>(.*?)</ADDITIONAL_INFO>", "<ADDITIONAL_INFO>this pka has been altered by github.com/mircodezorzi/pka2xml</ADDITIONAL_INFO>");
-	auto encrypted = pka2xml::encrypt(decrypted);
+  auto decrypted = pka2xml::decrypt(decoded);
+  re2::RE2::GlobalReplace(&decrypted, R"(<VERSION>\d\.\d\.\d\.\d{4}</VERSION>)", "<VERSION>6.0.1.0000</VERSION>");
+  re2::RE2::GlobalReplace(&decrypted, "<ADDITIONAL_INFO>(.*?)</ADDITIONAL_INFO>", "<ADDITIONAL_INFO>this pka has been altered by github.com/mircodezorzi/pka2xml</ADDITIONAL_INFO>");
+  auto encrypted = pka2xml::encrypt(decrypted);
 
-	{
-		CryptoPP::StringSource ss(encrypted, true,
-			new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), false));
-	}
+  CryptoPP::StringSource(encrypted, true,
+    new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), false));
 
-	return result;
+  return result;
 }
 
 std::string decode(const std::string &file) {
-	std::string decoded, result;
+  std::string decoded, result;
 
-	{
-		CryptoPP::StringSource ss(file, true,
-			new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
-	}
+  CryptoPP::StringSource(file, true,
+    new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
 
-	auto decrypted = pka2xml::decrypt(decoded, /* skip_decompression */ true);
+  auto decrypted = pka2xml::decrypt(decoded, /* skip_decompression */ true);
 
-	{
-		CryptoPP::StringSource ss(decrypted, true,
-			new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), /* newline */ false));
-	}
+  CryptoPP::StringSource(decrypted, true,
+    new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), /* newline */ false));
 
-	return result;
+  return result;
 }
 
-std::string encode(const std::string &file, int length) {
-	std::string decoded, result;
+std::string encode(const std::string &file, unsigned long length) {
+  std::string decoded, result;
 
-	{
-		CryptoPP::StringSource ss(file, true,
-			new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
-	}
+  CryptoPP::StringSource(file, true,
+    new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
 
-	auto uncompressed = pka2xml::uncompress(reinterpret_cast<const unsigned char*>(decoded.data()), decoded.size(), length);
+  // multilying the original length by 2 fixes a segfault
+  auto uncompressed = pka2xml::uncompress(reinterpret_cast<const unsigned char*>(decoded.data()), decoded.size(), length * 2);
 
-	re2::RE2::GlobalReplace(&uncompressed, "<ADDITIONAL_INFO>(.*?)</ADDITIONAL_INFO>", "<ADDITIONAL_INFO>this pka has been altered by github.com/mircodezorzi/pka2xml</ADDITIONAL_INFO>");
+  re2::RE2::GlobalReplace(&uncompressed, "<ADDITIONAL_INFO>(.*?)</ADDITIONAL_INFO>", "<ADDITIONAL_INFO>this pka has been altered by github.com/mircodezorzi/pka2xml</ADDITIONAL_INFO>");
 
-	auto decrypted = pka2xml::encrypt(uncompressed);
+  auto decrypted = pka2xml::encrypt(uncompressed);
 
-	{
-		CryptoPP::StringSource ss(decrypted, true,
-			new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), /* newline */ false));
-	}
+  CryptoPP::StringSource(decrypted, true,
+    new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), false));
 
-	return result;
+  return result;
 }
 
 
 invocation_response my_handler(invocation_request const& request) {
-	JsonValue json(request.payload);
+  JsonValue json(request.payload);
 
-	if (!json.WasParseSuccessful()) {
-		return invocation_response::failure("error while parsing the json request", "InvalidJSON");
-	}
+  if (!json.WasParseSuccessful()) {
+    return invocation_response::failure("error while parsing the json request", "InvalidJSON");
+  }
 
-	auto v = json.View();
+  auto v = json.View();
 
-	if (!v.ValueExists("file") || !v.GetObject("file").IsString()) {
-		return invocation_response::failure("missing file", "MissingFile");
-	}
+  if (!v.ValueExists("file") || !v.GetObject("file").IsString()) {
+    return invocation_response::failure("missing file", "MissingFile");
+  }
 
-	if (!v.ValueExists("action") || !v.GetObject("action").IsString()) {
-		return invocation_response::failure("missing action", "MissingAction");
-	}
+  if (!v.ValueExists("action") || !v.GetObject("action").IsString()) {
+    return invocation_response::failure("missing action", "MissingAction");
+  }
 
-	auto file = v.GetString("file");
-	auto action = v.GetString("action");
+  auto file = v.GetString("file");
+  auto action = v.GetString("action");
 
-	try {
-		if (action == "retrofit") {
-			return invocation_response::success(retrofit(file), "data:text/plain;base64");
-		} else if (action == "decode") {
-			return invocation_response::success(decode(file), "data:text/plain;base64");
-		} else if (action == "encode") {
-			if (!v.ValueExists("length") || !v.GetObject("length").IsIntegerType()) {
-				return invocation_response::failure("missing length", "Missinglength");
-			}
-			auto length = v.GetInt64("length");
-			return invocation_response::success(encode(file, length), "data:text/plain;base64");
-		}
-	} catch (const std::exception &e) {
-		return invocation_response::failure("error during the decoding of the file", "InvalidPK");
-	}
+  try {
+    if (action == "retrofit") {
+      return invocation_response::success(retrofit(file), "data:text/plain;base64");
+    } else if (action == "decode") {
+      return invocation_response::success(decode(file), "data:text/plain;base64");
+    } else if (action == "encode") {
+      if (!v.ValueExists("length") || !v.GetObject("length").IsIntegerType()) {
+        return invocation_response::failure("missing length", "Missinglength");
+      }
+      unsigned long length = v.GetInt64("length");
+      return invocation_response::success(encode(file, length), "data:text/plain;base64");
+    }
+  } catch (const std::exception &e) {
+    return invocation_response::failure("error during the decoding of the file", "InvalidPK");
+  }
 
-	return invocation_response::failure("action not supported yet", "InvalidAction");
+  return invocation_response::failure("action not supported yet", "InvalidAction");
 }
 
 int main() {
-	run_handler(my_handler);
-	return 0;
+  run_handler(my_handler);
+  return 0;
 }
