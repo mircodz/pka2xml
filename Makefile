@@ -9,5 +9,5 @@ patch: patch.c
 	gcc -o patch patch.c
 
 install: patch pka2xml
-	cp patch /usr/local/bin/PacketTracer
+	cp patch /usr/local/bin/PatchedTracer
 	cp pka2xml /usr/local/bin
