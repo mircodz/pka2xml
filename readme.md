@@ -15,6 +15,7 @@ where options are:
   -e <in> <out>      decrypt pka/pkt to xml
   -nets <in>         decrypt packet tracer "nets" file
   -logs <in>         decrypt packet tracer log file
+  -f --forge <out>   forge authentication file to bypass login
 
 examples:
   pka2xml -d foobar.pka foobar.xml
