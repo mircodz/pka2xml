@@ -1,0 +1,223 @@
+graph: {
+title: "Graph of _ZN4Util7decryptIN8CryptoPP7TwofishEEE10QByteArrayRKS3_hh"
+manhattan_edges: yes
+layoutalgorithm: mindepth
+finetuning: no
+layout_downfactor: 100
+layout_upfactor: 0
+layout_nearfactor: 0
+xlspace: 12
+yspace: 30
+// IDA palette
+colorentry 32: 0 0 0
+colorentry 33: 0 0 255
+colorentry 34: 0 0 255
+colorentry 35: 128 128 128
+colorentry 36: 128 128 128
+colorentry 37: 0 0 128
+colorentry 38: 0 0 128
+colorentry 39: 0 0 255
+colorentry 40: 0 0 255
+colorentry 41: 0 0 128
+colorentry 42: 0 128 0
+colorentry 43: 0 255 0
+colorentry 44: 0 128 0
+colorentry 45: 255 128 0
+colorentry 46: 0 128 0
+colorentry 47: 128 128 255
+colorentry 48: 255 0 0
+colorentry 49: 128 128 0
+colorentry 50: 1 1 1
+colorentry 51: 192 192 192
+colorentry 52: 0 0 255
+colorentry 53: 0 0 255
+colorentry 54: 0 0 255
+colorentry 55: 128 128 128
+colorentry 56: 128 128 255
+colorentry 57: 0 128 0
+colorentry 58: 0 0 128
+colorentry 59: 0 0 255
+colorentry 60: 128 0 128
+colorentry 61: 0 128 0
+colorentry 62: 0 128 0
+colorentry 63: 0 128 64
+colorentry 64: 0 0 128
+colorentry 65: 0 0 128
+colorentry 66: 255 0 255
+colorentry 67: 128 128 0
+colorentry 68: 0 0 128
+colorentry 69: 0 0 255
+colorentry 70: 0 0 128
+colorentry 71: 0 0 255
+colorentry 72: 0 0 0
+colorentry 73: 255 255 255
+colorentry 74: 192 187 175
+colorentry 75: 0 255 255
+colorentry 76: 0 0 0
+colorentry 77: 128 0 0
+colorentry 78: 128 128 128
+colorentry 79: 128 128 0
+colorentry 80: 255 0 255
+colorentry 81: 0 0 0
+colorentry 82: 0 0 255
+colorentry 83: 0 0 0
+node: { title: "0" label: "69_ZN4Util7decryptIN8CryptoPP7TwofishEEE10QByteArrayRKS3_hh31:
+push    r15
+push    r14
+mov     r15, rdi
+push    r13
+push    r12
+mov     r13, rsi
+push    rbp
+push    rbx
+mov     r14d, edx
+xor     edx, edx; char
+sub     rsp, 58h
+mov     rax, fs:28h
+mov     [rsp+88h+var_40], rax
+xor     eax, eax
+mov     rax, [rsi]
+lea     r12, [rsp+88h+data]
+mov     [rsp+88h+orig_iv], ecx
+mov     rdi, r12; this
+mov     esi, [rax+4]; int" vertical_order: 0 }
+node: { title: "1" label: "call    __ZN10QByteArrayC1Eic; QByteArray::QByteArray(int,char)
+mov     rax, [r13+0]
+mov     ebx, [rax+4]
+test    ebx, ebx
+jz      loc_34AC3B0" }
+node: { title: "2" label: "xor     ebp, ebp
+jmp     short loc_34AC364" }
+node: { title: "3" label: "mov     eax, [rcx]
+cmp     eax, 1
+jbe     short loc_34AC398" }
+node: { title: "4" label: "movsx   edx, byte ptr [rcx+0Bh]
+mov     esi, [rcx+4]
+mov     rdi, r12
+add     esi, 1
+shr     edx, 1Fh
+call    __ZN10QByteArray11reallocDataEj6QFlagsIN10QArrayData16AllocationOptionEE; QByteArray::reallocData(uint,QFlags<QArrayData::AllocationOption>)" }
+node: { title: "5" label: "mov     rax, [rsp+88h+data]
+mov     rdx, [rax+10h]" }
+node: { title: "6" label: "add     rax, rdx
+movsxd  rcx, ebp
+add     ebp, 1
+mov     [rax+rcx], bl
+mov     rax, [r13+0]
+mov     ebx, [rax+4]
+cmp     ebx, ebp
+jbe     short loc_34AC3B0" }
+node: { title: "7" label: "mov     edx, ebp
+mov     rcx, [rsp+88h+data]
+not     edx
+add     edx, ebx
+movsxd  rdx, edx
+add     rdx, rax
+add     rdx, [rax+10h]
+mov     eax, ebx
+imul    eax, ebp
+sub     ebx, eax
+xor     bl, [rdx]
+cmp     ebp, [rcx+4]
+jl      short loc_34AC328" }
+node: { title: "8" label: "mov     esi, ebp; int
+mov     rdi, r12; this
+call    __ZN10QByteArray6expandEi; QByteArray::expand(int)
+jmp     short loc_34AC344" }
+node: { title: "9" label: "mov     rdx, [rcx+10h]
+mov     rax, rcx
+cmp     rdx, 18h
+jnz     short loc_34AC32F" }
+node: { title: "10" label: "jmp     short loc_34AC34D" }
+node: { title: "11" label: "lea     rbx, [rsp+88h+key]
+movzx   edx, r14b
+mov     ecx, 10h
+mov     esi, 10h
+mov     rdi, rbx
+call    memset_s
+movzx   edx, byte ptr [rsp+88h+orig_iv]
+lea     r13, [rsp+88h+iv]
+mov     ecx, 10h
+mov     esi, 10h
+mov     rdi, r13
+call    memset_s
+lea     rbp, [rsp+88h+var_70]
+mov     rcx, r13
+mov     rdx, rbx
+mov     rsi, r12
+mov     rdi, rbp
+call    _ZN4Util8decipherIN8CryptoPP7TwofishEEE10QByteArrayRKS3_PhS6_; Util::decipher<CryptoPP::Twofish>(QByteArray const&,uchar *,uchar *)
+mov     rax, [rsp+88h+var_70]
+mov     rdi, rbp
+mov     [r15], rax
+mov     rax, cs:_ZN10QArrayData11shared_nullE_ptr
+mov     [rsp+88h+var_70], rax
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()
+mov     rdi, r12
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()" }
+node: { title: "12" label: "mov     rdi, [rsp+88h+var_40]
+xor     rdi, fs:28h
+mov     rax, r15
+jnz     short loc_34AC443" }
+node: { title: "13" label: "add     rsp, 58h
+pop     rbx
+pop     rbp
+pop     r12
+pop     r13
+pop     r14
+pop     r15
+retn" vertical_order: 18 }
+node: { title: "14" label: "call    ___stack_chk_fail" vertical_order: 18 }
+node: { title: "15" label: "mov     rbx, rax
+mov     rdi, r12
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()
+mov     rax, rbx" }
+node: { title: "16" label: "mov     rdi, rax
+call    ___cxa_begin_catch
+mov     rax, cs:_ZN10QArrayData11shared_nullE_ptr
+mov     [r15], rax
+call    ___cxa_end_catch
+jmp     short loc_34AC421" }
+node: { title: "17" label: "jmp     short loc_34AC456" }
+// node 0
+edge: { sourcename: "0" targetname: "1" }
+// node 1
+edge: { sourcename: "1" targetname: "2" }
+edge: { sourcename: "1" targetname: "17" }
+edge: { sourcename: "1" targetname: "11" }
+// node 2
+edge: { sourcename: "2" targetname: "7" }
+// node 3
+edge: { sourcename: "3" targetname: "4" label: "false" color: red }
+edge: { sourcename: "3" targetname: "9" label: "true" color: darkgreen }
+// node 4
+edge: { sourcename: "4" targetname: "5" }
+// node 5
+edge: { sourcename: "5" targetname: "6" }
+// node 6
+edge: { sourcename: "6" targetname: "7" label: "false" color: red }
+edge: { sourcename: "6" targetname: "11" label: "true" color: darkgreen }
+// node 7
+edge: { sourcename: "7" targetname: "3" label: "true" color: darkgreen }
+edge: { sourcename: "7" targetname: "8" label: "false" color: red }
+// node 8
+edge: { sourcename: "8" targetname: "5" }
+// node 9
+edge: { sourcename: "9" targetname: "4" label: "true" color: darkgreen }
+edge: { sourcename: "9" targetname: "10" label: "false" color: red }
+// node 10
+edge: { sourcename: "10" targetname: "6" }
+// node 11
+edge: { sourcename: "11" targetname: "12" }
+// node 12
+edge: { sourcename: "12" targetname: "13" label: "false" color: red }
+edge: { sourcename: "12" targetname: "14" label: "true" color: darkgreen }
+// node 13
+// node 14
+// node 15
+edge: { sourcename: "15" targetname: "16" }
+// node 16
+edge: { sourcename: "16" targetname: "12" }
+// node 17
+edge: { sourcename: "17" targetname: "16" }
+}

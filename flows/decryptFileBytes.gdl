@@ -1,0 +1,380 @@
+graph: {
+title: "Graph of _ZN4Util16decryptFileBytesERK10QByteArrayRS0_7QString"
+manhattan_edges: yes
+layoutalgorithm: mindepth
+finetuning: no
+layout_downfactor: 100
+layout_upfactor: 0
+layout_nearfactor: 0
+xlspace: 12
+yspace: 30
+// IDA palette
+colorentry 32: 0 0 0
+colorentry 33: 0 0 255
+colorentry 34: 0 0 255
+colorentry 35: 128 128 128
+colorentry 36: 128 128 128
+colorentry 37: 0 0 128
+colorentry 38: 0 0 128
+colorentry 39: 0 0 255
+colorentry 40: 0 0 255
+colorentry 41: 0 0 128
+colorentry 42: 0 128 0
+colorentry 43: 0 255 0
+colorentry 44: 0 128 0
+colorentry 45: 255 128 0
+colorentry 46: 0 128 0
+colorentry 47: 128 128 255
+colorentry 48: 255 0 0
+colorentry 49: 128 128 0
+colorentry 50: 1 1 1
+colorentry 51: 192 192 192
+colorentry 52: 0 0 255
+colorentry 53: 0 0 255
+colorentry 54: 0 0 255
+colorentry 55: 128 128 128
+colorentry 56: 128 128 255
+colorentry 57: 0 128 0
+colorentry 58: 0 0 128
+colorentry 59: 0 0 255
+colorentry 60: 128 0 128
+colorentry 61: 0 128 0
+colorentry 62: 0 128 0
+colorentry 63: 0 128 64
+colorentry 64: 0 0 128
+colorentry 65: 0 0 128
+colorentry 66: 255 0 255
+colorentry 67: 128 128 0
+colorentry 68: 0 0 128
+colorentry 69: 0 0 255
+colorentry 70: 0 0 128
+colorentry 71: 0 0 255
+colorentry 72: 0 0 0
+colorentry 73: 255 255 255
+colorentry 74: 192 187 175
+colorentry 75: 0 255 255
+colorentry 76: 0 0 0
+colorentry 77: 128 0 0
+colorentry 78: 128 128 128
+colorentry 79: 128 128 0
+colorentry 80: 255 0 255
+colorentry 81: 0 0 0
+colorentry 82: 0 0 255
+colorentry 83: 0 0 0
+node: { title: "0" label: "69_ZN4Util16decryptFileBytesERK10QByteArrayRS0_7QString31:
+push    r15
+push    r14
+push    r13
+push    r12
+push    rbp
+push    rbx
+mov     rbp, rdi
+mov     rbx, rsi
+sub     rsp, 38h
+mov     r13, rsp
+mov     rdi, r13; this
+mov     rax, fs:28h
+mov     [rsp+68h+var_40], rax
+xor     eax, eax
+call    __ZN12QDomDocumentC1Ev; QDomDocument::QDomDocument(void)
+xor     r8d, r8d; int *
+xor     ecx, ecx; int *
+xor     edx, edx; QString *
+mov     rsi, rbp; QByteArray *
+mov     rdi, r13; this
+call    __ZN12QDomDocument10setContentERK10QByteArrayP7QStringPiS5_; QDomDocument::setContent(QByteArray const&,QString *,int *,int *)
+test    al, al
+jnz     loc_34A5820" vertical_order: 0 }
+node: { title: "1" label: "mov     rax, cs:_ZN10QArrayData11shared_nullE_ptr
+lea     r12, [rsp+68h+decrypted]
+mov     rsi, rbp; unused
+lea     r14, [rsp+68h+encrypted]
+mov     rdi, r12; this
+mov     [rsp+68h+encrypted], rax
+call    _ZN4Util13decryptPTSaveERK10QByteArray; Util::decryptPTSave(QByteArray const&)
+mov     rax, [rsp+68h+encrypted]
+mov     rdx, [rsp+68h+decrypted]
+mov     rdi, r12
+lea     r14, [rsp+68h+encrypted]
+mov     [rsp+68h+encrypted], rdx
+mov     [rsp+68h+decrypted], rax
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()
+mov     rax, [rsp+68h+encrypted]
+mov     edx, [rax+4]
+test    edx, edx
+jz      loc_34A5870" }
+node: { title: "2" label: "mov     rdi, r14; obfuscated
+call    _ZN4Util16deobfuscateBytesER10QByteArray; Util::deobfuscateBytes(QByteArray &)
+mov     rsi, [rsp+68h+encrypted]
+lea     rbp, [rsp+68h+plain]
+mov     rdi, rbp; unsigned __int8 *
+mov     edx, [rsi+4]
+add     rsi, [rsi+10h]; int
+call    __Z11qUncompressPKhi; qUncompress(uchar const*,int)
+mov     rdx, qword ptr [rsp+68h+plain]
+mov     rax, [rbx]
+mov     rdi, rbp
+mov     [rbx], rdx
+mov     qword ptr [rsp+68h+plain], rax
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()
+mov     rax, [rbx]
+mov     eax, [rax+4]
+test    eax, eax
+jz      loc_34A5858" }
+node: { title: "3" label: "mov     esi, 0FFFFFF82h
+mov     rdi, r12
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+lea     r15, [rsp+68h+var_58]
+mov     esi, 0FFFFFFC2h
+mov     rdi, r15
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     rdx, [rsp+68h+var_58]
+mov     qword ptr [rsp+68h+plain], rdx
+mov     eax, [rdx]
+add     eax, 1
+cmp     eax, 1
+ja      loc_34A58B0" }
+node: { title: "4" label: "mov     rsi, r12; QString *
+mov     rdi, rbp; this
+call    __ZN7QString6appendERKS_; QString::append(QString const&)
+lea     rdx, src
+mov     rsi, rbp
+mov     rdi, rbx
+call    _ZN10QByteArray7replaceERK7QStringPKc; QByteArray::replace(QString const&,char const*)
+mov     rsi, rax
+mov     rdi, rbx
+call    __ZN10QByteArrayaSERKS_; QByteArray::operator=(QByteArray const&)
+mov     rdi, rbp
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r15
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r12
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     esi, 0FFFFFF83h
+mov     rdi, r12
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     esi, 0FFFFFFC3h
+mov     rdi, r15
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     rdx, [rsp+68h+var_58]
+mov     qword ptr [rsp+68h+plain], rdx
+mov     eax, [rdx]
+add     eax, 1
+cmp     eax, 1
+ja      loc_34A58A0" }
+node: { title: "5" label: "mov     rsi, r12; QString *
+mov     rdi, rbp; this
+call    __ZN7QString6appendERKS_; QString::append(QString const&)
+lea     rdx, src
+mov     rsi, rbp
+mov     rdi, rbx
+call    _ZN10QByteArray7replaceERK7QStringPKc; QByteArray::replace(QString const&,char const*)
+mov     rsi, rax
+mov     rdi, rbx
+call    __ZN10QByteArrayaSERKS_; QByteArray::operator=(QByteArray const&)
+mov     rdi, rbp
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r15
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r12
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     esi, 0FFFFFF94h
+mov     rdi, r12
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     esi, 0FFFFFF98h
+mov     rdi, r15
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     rdx, [rsp+68h+var_58]
+mov     qword ptr [rsp+68h+plain], rdx
+mov     eax, [rdx]
+add     eax, 1
+cmp     eax, 1
+ja      loc_34A5890" }
+node: { title: "6" label: "mov     rsi, r12; QString *
+mov     rdi, rbp; this
+call    __ZN7QString6appendERKS_; QString::append(QString const&)
+lea     rdx, src
+mov     rsi, rbp
+mov     rdi, rbx
+call    _ZN10QByteArray7replaceERK7QStringPKc; QByteArray::replace(QString const&,char const*)
+mov     rsi, rax
+mov     rdi, rbx
+call    __ZN10QByteArrayaSERKS_; QByteArray::operator=(QByteArray const&)
+mov     rdi, rbp
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r15
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r12
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     esi, 0FFFFFF92h
+mov     rdi, r12
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     esi, 0FFFFFF93h
+mov     rdi, r15
+call    __ZN7QStringC1E5QChar; QString::QString(QChar)
+mov     rdx, [rsp+68h+var_58]
+mov     qword ptr [rsp+68h+plain], rdx
+mov     eax, [rdx]
+add     eax, 1
+cmp     eax, 1
+ja      loc_34A5880" }
+node: { title: "7" label: "mov     rsi, r12; QString *
+mov     rdi, rbp; this
+call    __ZN7QString6appendERKS_; QString::append(QString const&)
+lea     rdx, asc_3FDE4B6+3; \"\\\"\"
+mov     rsi, rbp
+mov     rdi, rbx
+call    _ZN10QByteArray7replaceERK7QStringPKc; QByteArray::replace(QString const&,char const*)
+mov     rsi, rax
+mov     rdi, rbx
+call    __ZN10QByteArrayaSERKS_; QByteArray::operator=(QByteArray const&)
+mov     rdi, rbp
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r15
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r12
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r14
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()
+jmp     short loc_34A582B" }
+node: { title: "8" label: "mov     rsi, rbp
+mov     rdi, rbx
+call    __ZN10QByteArrayaSERKS_; QByteArray::operator=(QByteArray const&)" }
+node: { title: "9" label: "mov     rdi, r13; this
+call    __ZN12QDomDocumentD1Ev; QDomDocument::~QDomDocument()" }
+node: { title: "10" label: "mov     rax, [rsp+68h+var_40]
+xor     rax, fs:28h
+jnz     short loc_34A58B9" }
+node: { title: "11" label: "add     rsp, 38h
+pop     rbx
+pop     rbp
+pop     r12
+pop     r13
+pop     r14
+pop     r15
+retn" vertical_order: 36 }
+node: { title: "12" label: "mov     rdi, r14
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()
+mov     rdi, r13; this
+call    __ZN12QDomDocumentD1Ev; QDomDocument::~QDomDocument()
+jmp     short loc_34A5833" }
+node: { title: "13" label: "mov     rsi, rbp
+mov     rdi, r14
+call    __ZN10QByteArrayaSERKS_; QByteArray::operator=(QByteArray const&)
+jmp     loc_34A55FB" }
+node: { title: "14" label: "lock add dword ptr [rdx], 1
+jmp     loc_34A57CF" }
+node: { title: "15" label: "lock add dword ptr [rdx], 1
+jmp     loc_34A575D" }
+node: { title: "16" label: "lock add dword ptr [rdx], 1
+jmp     loc_34A56EB" }
+node: { title: "17" label: "lock add dword ptr [rdx], 1
+jmp     loc_34A5679" }
+node: { title: "18" label: "call    ___stack_chk_fail" vertical_order: 36 }
+node: { title: "19" label: "mov     rdi, rbp
+mov     rbx, rax
+call    _ZN7QStringD2Ev; QString::~QString()
+mov     rdi, r15
+call    _ZN7QStringD2Ev; QString::~QString()" }
+node: { title: "20" label: "mov     rdi, r12
+call    _ZN7QStringD2Ev; QString::~QString()" }
+node: { title: "21" label: "mov     rdi, r14
+call    _ZN10QByteArrayD2Ev; QByteArray::~QByteArray()" }
+node: { title: "22" label: "mov     rdi, r13; this
+call    __ZN12QDomDocumentD1Ev; QDomDocument::~QDomDocument()
+mov     rdi, rbx; struct _Unwind_Exception *
+call    __Unwind_Resume" vertical_order: 36 }
+node: { title: "23" label: "mov     rbx, rax
+jmp     short loc_34A58D1" }
+node: { title: "24" label: "jmp     short loc_34A58BE" }
+node: { title: "25" label: "jmp     short loc_34A58BE" }
+node: { title: "26" label: "jmp     short loc_34A58BE" }
+node: { title: "27" label: "jmp     short loc_34A58F1" }
+node: { title: "28" label: "jmp     short loc_34A58BE" }
+node: { title: "29" label: "jmp     short loc_34A58BE" }
+node: { title: "30" label: "mov     rbx, rax
+jmp     short loc_34A58E1" }
+node: { title: "31" label: "jmp     short loc_34A58F1" }
+node: { title: "32" label: "mov     rbx, rax
+jmp     short loc_34A58D9" }
+node: { title: "33" label: "jmp     short loc_34A58BE" }
+node: { title: "34" label: "jmp     short loc_34A58BE" }
+node: { title: "35" label: "jmp     short loc_34A58F1" }
+// node 0
+edge: { sourcename: "0" targetname: "1" label: "false" color: red }
+edge: { sourcename: "0" targetname: "8" label: "true" color: darkgreen }
+// node 1
+edge: { sourcename: "1" targetname: "2" label: "false" color: red }
+edge: { sourcename: "1" targetname: "13" label: "true" color: darkgreen }
+// node 2
+edge: { sourcename: "2" targetname: "3" label: "false" color: red }
+edge: { sourcename: "2" targetname: "12" label: "true" color: darkgreen }
+// node 3
+edge: { sourcename: "3" targetname: "4" label: "false" color: red }
+edge: { sourcename: "3" targetname: "17" label: "true" color: darkgreen }
+// node 4
+edge: { sourcename: "4" targetname: "5" label: "false" color: red }
+edge: { sourcename: "4" targetname: "16" label: "true" color: darkgreen }
+// node 5
+edge: { sourcename: "5" targetname: "6" label: "false" color: red }
+edge: { sourcename: "5" targetname: "15" label: "true" color: darkgreen }
+// node 6
+edge: { sourcename: "6" targetname: "7" label: "false" color: red }
+edge: { sourcename: "6" targetname: "14" label: "true" color: darkgreen }
+// node 7
+edge: { sourcename: "7" targetname: "9" }
+// node 8
+edge: { sourcename: "8" targetname: "9" }
+// node 9
+edge: { sourcename: "9" targetname: "10" }
+// node 10
+edge: { sourcename: "10" targetname: "11" label: "false" color: red }
+edge: { sourcename: "10" targetname: "18" label: "true" color: darkgreen }
+// node 11
+// node 12
+edge: { sourcename: "12" targetname: "10" }
+// node 13
+edge: { sourcename: "13" targetname: "2" }
+// node 14
+edge: { sourcename: "14" targetname: "7" }
+// node 15
+edge: { sourcename: "15" targetname: "6" }
+// node 16
+edge: { sourcename: "16" targetname: "5" }
+// node 17
+edge: { sourcename: "17" targetname: "4" }
+// node 18
+// node 19
+edge: { sourcename: "19" targetname: "20" }
+// node 20
+edge: { sourcename: "20" targetname: "21" }
+// node 21
+edge: { sourcename: "21" targetname: "22" }
+// node 22
+// node 23
+edge: { sourcename: "23" targetname: "20" }
+// node 24
+edge: { sourcename: "24" targetname: "19" }
+// node 25
+edge: { sourcename: "25" targetname: "19" }
+// node 26
+edge: { sourcename: "26" targetname: "19" }
+// node 27
+edge: { sourcename: "27" targetname: "23" }
+// node 28
+edge: { sourcename: "28" targetname: "19" }
+// node 29
+edge: { sourcename: "29" targetname: "19" }
+// node 30
+edge: { sourcename: "30" targetname: "22" }
+// node 31
+edge: { sourcename: "31" targetname: "23" }
+// node 32
+edge: { sourcename: "32" targetname: "21" }
+// node 33
+edge: { sourcename: "33" targetname: "19" }
+// node 34
+edge: { sourcename: "34" targetname: "19" }
+// node 35
+edge: { sourcename: "35" targetname: "23" }
+}

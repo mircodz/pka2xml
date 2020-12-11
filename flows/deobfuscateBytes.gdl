@@ -1,0 +1,145 @@
+graph: {
+title: "Graph of _ZN4Util16deobfuscateBytesER10QByteArray"
+manhattan_edges: yes
+layoutalgorithm: mindepth
+finetuning: no
+layout_downfactor: 100
+layout_upfactor: 0
+layout_nearfactor: 0
+xlspace: 12
+yspace: 30
+// IDA palette
+colorentry 32: 0 0 0
+colorentry 33: 0 0 255
+colorentry 34: 0 0 255
+colorentry 35: 128 128 128
+colorentry 36: 128 128 128
+colorentry 37: 0 0 128
+colorentry 38: 0 0 128
+colorentry 39: 0 0 255
+colorentry 40: 0 0 255
+colorentry 41: 0 0 128
+colorentry 42: 0 128 0
+colorentry 43: 0 255 0
+colorentry 44: 0 128 0
+colorentry 45: 255 128 0
+colorentry 46: 0 128 0
+colorentry 47: 128 128 255
+colorentry 48: 255 0 0
+colorentry 49: 128 128 0
+colorentry 50: 1 1 1
+colorentry 51: 192 192 192
+colorentry 52: 0 0 255
+colorentry 53: 0 0 255
+colorentry 54: 0 0 255
+colorentry 55: 128 128 128
+colorentry 56: 128 128 255
+colorentry 57: 0 128 0
+colorentry 58: 0 0 128
+colorentry 59: 0 0 255
+colorentry 60: 128 0 128
+colorentry 61: 0 128 0
+colorentry 62: 0 128 0
+colorentry 63: 0 128 64
+colorentry 64: 0 0 128
+colorentry 65: 0 0 128
+colorentry 66: 255 0 255
+colorentry 67: 128 128 0
+colorentry 68: 0 0 128
+colorentry 69: 0 0 255
+colorentry 70: 0 0 128
+colorentry 71: 0 0 255
+colorentry 72: 0 0 0
+colorentry 73: 255 255 255
+colorentry 74: 192 187 175
+colorentry 75: 0 255 255
+colorentry 76: 0 0 0
+colorentry 77: 128 0 0
+colorentry 78: 128 128 128
+colorentry 79: 128 128 0
+colorentry 80: 255 0 255
+colorentry 81: 0 0 0
+colorentry 82: 0 0 255
+colorentry 83: 0 0 0
+node: { title: "0" label: "69_ZN4Util16deobfuscateBytesER10QByteArray31:
+mov     rax, [rdi]
+mov     edx, [rax+4]
+test    edx, edx
+jz      locret_34A4B38" vertical_order: 0 }
+node: { title: "1" label: "push    r13
+push    r12
+mov     r12, rdi
+push    rbp
+push    rbx
+xor     ebx, ebx
+sub     rsp, 8
+jmp     short loc_34A4AE9" }
+node: { title: "2" label: "mov     edx, [rax]
+cmp     edx, 1
+jbe     short loc_34A4B18" }
+node: { title: "3" label: "movsx   edx, byte ptr [rax+0Bh]
+mov     esi, [rax+4]
+mov     rdi, r12
+add     esi, 1
+shr     edx, 1Fh
+call    __ZN10QByteArray11reallocDataEj6QFlagsIN10QArrayData16AllocationOptionEE; QByteArray::reallocData(uint,QFlags<QArrayData::AllocationOption>)
+mov     rdx, [r12]
+mov     rcx, [rdx+10h]" }
+node: { title: "4" label: "add     rdx, r13
+add     ebx, 1
+mov     [rdx+rcx], bpl
+mov     rax, [r12]
+mov     edx, [rax+4]
+cmp     edx, ebx
+jbe     short loc_34A4B28" }
+node: { title: "5" label: "movsxd  r13, ebx
+mov     rcx, [rax+10h]
+mov     ebp, edx
+lea     rsi, [rax+r13]
+sub     ebp, ebx
+xor     bpl, [rsi+rcx]
+cmp     ebx, edx
+jl      short loc_34A4AB0" }
+node: { title: "6" label: "mov     esi, ebx; int
+mov     rdi, r12; this
+call    __ZN10QByteArray6expandEi; QByteArray::expand(int)
+mov     rdx, [r12]
+mov     rcx, [rdx+10h]
+jmp     short loc_34A4AD4" }
+node: { title: "7" label: "cmp     rcx, 18h
+mov     rdx, rax
+jnz     short loc_34A4AB7" }
+node: { title: "8" label: "jmp     short loc_34A4AD4" }
+node: { title: "9" label: "add     rsp, 8
+pop     rbx
+pop     rbp
+pop     r12
+pop     r13
+retn" vertical_order: 11 }
+node: { title: "10" label: "rep retn" vertical_order: 11 }
+// node 0
+edge: { sourcename: "0" targetname: "1" label: "false" color: red }
+edge: { sourcename: "0" targetname: "10" label: "true" color: darkgreen }
+// node 1
+edge: { sourcename: "1" targetname: "5" }
+// node 2
+edge: { sourcename: "2" targetname: "3" label: "false" color: red }
+edge: { sourcename: "2" targetname: "7" label: "true" color: darkgreen }
+// node 3
+edge: { sourcename: "3" targetname: "4" }
+// node 4
+edge: { sourcename: "4" targetname: "5" label: "false" color: red }
+edge: { sourcename: "4" targetname: "9" label: "true" color: darkgreen }
+// node 5
+edge: { sourcename: "5" targetname: "2" label: "true" color: darkgreen }
+edge: { sourcename: "5" targetname: "6" label: "false" color: red }
+// node 6
+edge: { sourcename: "6" targetname: "4" }
+// node 7
+edge: { sourcename: "7" targetname: "3" label: "true" color: darkgreen }
+edge: { sourcename: "7" targetname: "8" label: "false" color: red }
+// node 8
+edge: { sourcename: "8" targetname: "4" }
+// node 9
+// node 10
+}

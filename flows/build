@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+for i in $(ls *.gdl); do
+	filename="${i%.*}"
+	perl graph-easy.pl $filename.gdl --as_dot > $filename.dot
+	dot -Tpng $filename.dot -o $filename.png
+done
