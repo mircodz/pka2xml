@@ -21,10 +21,11 @@ def get_value(node, path):
 
 class Port:
 
-  def __init__(self, node, index, parent_type):
+  def __init__(self, node, index, parent_type, dev_name = ''):
     self.type   = get_value(node, 'TYPE')
     self.mac    = get_value(node, 'MACADDRESS')
     self.ip     = get_value(node, 'IP')
+    self.sub    = get_value(node, 'SUBNET')
     self.dhcp   = get_value(node, 'PORT_DHCP_ENABLE')
 
     if self.dhcp == 'true':
@@ -70,9 +71,11 @@ class Port:
       },
     }
 
-
     if self.type:
       self.name = switch[main_switch[parent_type]][self.type].format(index)
+
+    if dev_name != '':
+      self.name = dev_name
 
   def __repr__(self):
     return self.name if self.name else '<Unnamed>'
@@ -83,13 +86,22 @@ class Ports:
     self.ports = []
     count = {}
 
-    for p in node.findall('ENGINE/MODULE/SLOT/MODULE/PORT'):
+    lines = node.findall('ENGINE/RUNNINGCONFIG/LINE')
+    names = []
+    for i, j in enumerate(lines):
+        if 'interface' in j.text:
+            names.append(j.text.split(' ')[1])
+
+    for i, p in enumerate(node.findall('ENGINE/MODULE/SLOT/MODULE/PORT')):
       v = get_value(p, 'TYPE')
       if count.get(v, None) is None:
         count[v] = 0
       else:
         count[v] += 1
-      self.ports.append(Port(p, count[v], node.find('ENGINE/TYPE').text))
+      if len(names):
+        self.ports.append(Port(p, count[v], node.find('ENGINE/TYPE').text, names[i]))
+      else:
+        self.ports.append(Port(p, count[v], node.find('ENGINE/TYPE').text))
     print(count)
 
   def by_name(self, name):
@@ -114,6 +126,7 @@ class Devices:
 
   def __init__(self, nodes):
     self.devices = [Device(d) for d in nodes.findall('PACKETTRACER5/NETWORK/DEVICES/DEVICE')]
+    #self.devices = [Device(d) for d in nodes.findall('NETWORK/DEVICES/DEVICE')]
 
   def by_id(self, id):
     # TODO map id to devices for close to linear access
@@ -145,11 +158,13 @@ traverse(comparisons, printer)
 traverse(setup, printer)
 
 links = root.find('PACKETTRACER5/NETWORK/LINKS')
+#links = root.find('NETWORK/LINKS')
 
 with open('network.dot', 'w') as f:
   f.write('graph G {\n')
-  f.write('\tnode [shape=record]\n')
-  f.write('\tgraph [pad="0.5", nodesep="1"];\n\n')
+  f.write('\tnode [style=rounded,shape=record];\n')
+  f.write('\tlayout=twopi;\n')
+  f.write('\tgraph [pad="1", ranksep="1.5"];\n\n')
   for link in links:
     try:
       fr = devices.by_index(link.find('CABLE/FROM').text)
@@ -170,8 +185,18 @@ with open('network.dot', 'w') as f:
     fr_ip = fr_port.ip if fr_port else ''
     to_ip = to_port.ip if to_port else ''
 
-    f.write('\t"{}"--"{}" [taillabel="{}"; headlabel="{}"];\n'.format(
-        fr.name, to.name, fr_ip, to_ip))
+    fr_sub = fr_port.sub if fr_port else ''
+    to_sub = to_port.sub if to_port else ''
+
+    try:    fr_sub = IPAddress(fr_port.sub).netmask_bits()
+    except: pass
+    try:    to_sub = IPAddress(to_port.sub).netmask_bits()
+    except: pass
+
+    f.write('\t"{}"--"{}" [taillabel="{}{}{}"; headlabel="{}{}{}"];\n'.format(
+        fr.name, to.name,
+        fr_ip, '/' if fr_sub != '' else '', fr_sub,
+        to_ip, '/' if to_sub != '' else '', to_sub))
   f.write('}')
 
 os.system('dot -Tpng network.dot -o network.png')
