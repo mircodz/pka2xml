@@ -159,7 +159,8 @@ std::string encrypt(
     const unsigned char *key,
     int key_size,
     const unsigned char *iv,
-    int iv_size) {
+    int iv_size,
+    bool skip_first_stages = false) {
   typename CryptoPP::EAX<Algorithm>::Encryption e;
   e.SetKeyWithIV(key, key_size, iv, iv_size);
 
@@ -178,11 +179,39 @@ std::string encrypt(
   );
 
   // Stage 4 - obfuscation
-  std::string output;
   int length = encrypted.size();
-  output.resize(length);
+  std::string output(length, '\0');
   for (int i = 0; i < encrypted.size(); i++) {
-    // I lost an entire hour trying to figure out why this wouldn't work. Had to swap the indexes...
+    output[length + ~i] = encrypted[i] ^ (length - i * length);
+  }
+
+  return output;
+}
+
+/// TODO documentation
+template <typename Algorithm>
+std::string encrypt2(
+    const std::string &input,
+    const unsigned char *key,
+    int key_size,
+    const unsigned char *iv,
+    int iv_size,
+    bool skip_first_stages = false) {
+  typename CryptoPP::EAX<Algorithm>::Encryption e;
+  e.SetKeyWithIV(key, key_size, iv, iv_size);
+
+  // Skip stage 1 & 2
+
+  // Stage 3 - encryption
+  std::string encrypted;
+  CryptoPP::StringSource ss(input, true,
+    new CryptoPP::AuthenticatedEncryptionFilter(e, new CryptoPP::StringSink(encrypted))
+  );
+
+  // Stage 4 - obfuscation
+  int length = encrypted.size();
+  std::string output(length, '\0');
+  for (int i = 0; i < encrypted.size(); i++) {
     output[length + ~i] = encrypted[i] ^ (length - i * length);
   }
 
@@ -194,7 +223,15 @@ std::string encrypt_pka(const std::string &input) {
   static const unsigned char key[16] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
   static const unsigned char iv[16]  = { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 };
 
-  return encrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv));
+  return encrypt<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv), /* skip_first_stages */ true);
+}
+
+/// \see decrypt_nets
+std::string encrypt_nets(const std::string &input) {
+  static const unsigned char key[16] = { 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186, 186 };
+  static const unsigned char iv[16]  = { 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190 };
+
+  return encrypt2<CryptoPP::Twofish>(input, key, sizeof(key), iv, sizeof(iv));
 }
 
 /// TODO documentation
@@ -215,6 +252,7 @@ where options are:
   -e <in> <out>      decrypt pka/pkt to xml
   -nets <in>         decrypt packet tracer "nets" file
   -logs <in>         decrypt packet tracer log file
+  -f --forge <out>   forge authentication file to bypass login
 
 examples:
   pka2xml -d foobar.pka foobar.xml
@@ -279,6 +317,10 @@ int main(int argc, char *argv[]) {
                         std::istreambuf_iterator<char>()};
       std::cout << decrypt_nets(input) << std::endl;
       f_in.close();
+    } else if (argc > 2 && (opt_exists(argv, argv + argc, "-f") || opt_exists(argv, argv + argc, "--forge"))) {
+      std::ofstream f_out{argv[2]};
+      f_out << encrypt_nets("foobar~foobar~foobar~foobar~1700000000");
+      f_out.close();
     } else {
       help();
     }
