@@ -184,7 +184,7 @@ std::string encode(const std::string &file, unsigned long length) {
 }
 
 
-invocation_response my_handler(invocation_request const& request) {
+invocation_response handler(invocation_request const& request) {
   JsonValue json(request.payload);
 
   if (!json.WasParseSuccessful()) {
@@ -226,6 +226,6 @@ invocation_response my_handler(invocation_request const& request) {
 }
 
 int main() {
-  run_handler(my_handler);
+  run_handler(handler);
   return 0;
 }

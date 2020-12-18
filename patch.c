@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
   if (pid < 0) {
   } else if (!pid) {
     chdir(path);
-		printf("executing %s", filepath);
+    printf("executing %s", filepath);
     system(filepath);
   } else {
     process = attach("PacketTracer7");

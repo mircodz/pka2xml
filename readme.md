@@ -12,7 +12,7 @@ usage: pka2xml [ options ]
 
 where options are:
   -d <in> <out>      decrypt pka/pkt to xml
-  -e <in> <out>      decrypt pka/pkt to xml
+  -e <in> <out>      encrypt pka/pkt to xml
   -nets <in>         decrypt packet tracer "nets" file
   -logs <in>         decrypt packet tracer log file
   -f --forge <out>   forge authentication file to bypass login
