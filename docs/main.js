@@ -68,6 +68,30 @@ async function Retrofit() {
   });
 }
 
+async function Renew() {
+  document.querySelector('#loading').style["display"] = "inline";
+
+  const file = document.querySelector('#file').files[0];
+  fetch('https://1nlsyfjbcb.execute-api.eu-south-1.amazonaws.com/default/pka2xml', {
+    method: 'POST',
+    body: JSON.stringify({
+      file: await toBase64(file),
+      action: 'renew',
+    })
+  }).then(response => response.text())
+  .then(b64toBlob)
+  .then(result => {
+    const a = document.createElement('a');
+    a.download = document.querySelector('#file').files[0].name;
+    a.href = window.URL.createObjectURL(result);
+    a.click();
+  }).catch(err => {
+    console.log(`err: ${err}`);
+  }).finally(() => {
+    document.querySelector('#loading').style["display"] = "none";
+  });
+}
+
 async function Encode() {
   const str = editor.getValue();
 
@@ -103,19 +127,22 @@ async function Encode() {
 
 async function Update() {
   const file = document.querySelector('#file').files[0];
-  if (file.name.endsWith('.pka')) {
+  if (file.name.endsWith('.pka') || file.name.endsWith('.pkt')) {
     document.querySelector('#decode').disabled = false;
     document.querySelector('#retrofit').disabled = false;
+    document.querySelector('#renew').disabled = false;
     document.querySelector('#encode').disabled = true;
     editor.setValue("", -1);
   } else if (file.name.endsWith('.xml')) {
     document.querySelector('#decode').disabled = true;
     document.querySelector('#retrofit').disabled = true;
+    document.querySelector('#renew').disabled = true;
     document.querySelector('#encode').disabled = false;
     editor.setValue(await loadFile(file), -1);
   } else {
     document.querySelector('#decode').disabled = true;
     document.querySelector('#retrofit').disabled = true;
+    document.querySelector('#renew').disabled = true;
     document.querySelector('#encode').disabled = true;
     editor.setValue("", -1);
   }

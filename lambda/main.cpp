@@ -95,6 +95,14 @@ std::string decrypt(const std::string &input, bool skip_decompression = false) {
   }
 }
 
+std::string decrypt_old(std::string input) {
+  for (int i = 0; i < input.size(); i++) {
+    input[i] = input[i] ^ (input.size() - i);
+  }
+
+  return uncompress(reinterpret_cast<const unsigned char*>(input.data()), input.size());
+}
+
 std::string encrypt(const std::string &input) {
   static const unsigned char key[16] = { 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137, 137 };
   static const unsigned char iv[16]  = { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 };
@@ -140,6 +148,23 @@ std::string retrofit(const std::string &file) {
     new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
 
   auto decrypted = pka2xml::decrypt(decoded);
+  re2::RE2::GlobalReplace(&decrypted, R"(<VERSION>\d\.\d\.\d\.\d{4}</VERSION>)", "<VERSION>6.0.1.0000</VERSION>");
+  re2::RE2::GlobalReplace(&decrypted, "<ADDITIONAL_INFO>(.*?)</ADDITIONAL_INFO>", "<ADDITIONAL_INFO>this pka has been altered by github.com/mircodezorzi/pka2xml</ADDITIONAL_INFO>");
+  auto encrypted = pka2xml::encrypt(decrypted);
+
+  CryptoPP::StringSource(encrypted, true,
+    new CryptoPP::Base64Encoder(new CryptoPP::StringSink(result), false));
+
+  return result;
+}
+
+std::string renew(const std::string &file) {
+  std::string decoded, result;
+
+  CryptoPP::StringSource(file, true,
+    new CryptoPP::Base64Decoder(new CryptoPP::StringSink(decoded)));
+
+  auto decrypted = pka2xml::decrypt_old(decoded);
   re2::RE2::GlobalReplace(&decrypted, R"(<VERSION>\d\.\d\.\d\.\d{4}</VERSION>)", "<VERSION>6.0.1.0000</VERSION>");
   re2::RE2::GlobalReplace(&decrypted, "<ADDITIONAL_INFO>(.*?)</ADDITIONAL_INFO>", "<ADDITIONAL_INFO>this pka has been altered by github.com/mircodezorzi/pka2xml</ADDITIONAL_INFO>");
   auto encrypted = pka2xml::encrypt(decrypted);
@@ -217,6 +242,8 @@ invocation_response handler(invocation_request const& request) {
       }
       unsigned long length = v.GetInt64("length");
       return invocation_response::success(encode(file, length), "data:text/plain;base64");
+    } else if (action == "renew") {
+      return invocation_response::success(renew(file), "data:text/plain;base64");
     }
   } catch (const std::exception &e) {
     return invocation_response::failure("error during the decoding of the file", "InvalidPK");

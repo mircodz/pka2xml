@@ -34,3 +34,7 @@ Given an xml file of a Packet Tracer Network Simulation, generates a graph of th
 
 ## Dependencies
 - CryptoPP
+
+## Todo
+- Implement the `retrofit` functionality in the tool.
+- Automatically detect pt files generated in old versions (which only use two-step encryption)
