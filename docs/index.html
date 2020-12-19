@@ -9,6 +9,12 @@
     body {
       height: 100%;
     }
+    #error {
+      color: red;
+      display: inline;
+      display: none;
+      padding-left: 10px;
+    }
     #editor {
       height: 100%;
       width: 100%;
@@ -41,8 +47,8 @@
       <button disabled id="encode" onclick="Encode()">Encode</button>
       <button disabled id="decode" onclick="Decode()">Decode</button>
       <button disabled id="retrofit" onclick="Retrofit()">Retrofit</button>
-      <button disabled id="renew" onclick="Renew()">Renew</button>
       <p id="loading">Loading...</p>
+      <p id="error">ghe sboro</p>
       <hr>
     </div>
     <div id="editor"></div>

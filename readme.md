@@ -36,5 +36,4 @@ Given an xml file of a Packet Tracer Network Simulation, generates a graph of th
 - CryptoPP
 
 ## Todo
-- Implement the `retrofit` functionality in the tool.
-- Automatically detect pt files generated in old versions (which only use two-step encryption)
+- `pka2xml-aws` was a fun project, but it's probably better to re-write the tool in pure javascript

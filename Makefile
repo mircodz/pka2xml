@@ -2,7 +2,7 @@ all: pka2xml patch
 
 .PHONY: pka2xml
 pka2xml: pka2xml.cpp
-	g++ -o pka2xml pka2xml.cpp -I/usr/local/include -L/usr/local/lib -lcryptopp -lz
+	g++ -o pka2xml pka2xml.cpp -I/usr/local/include -L/usr/local/lib -lcryptopp -lz -lre2
 
 .PHONY: patch
 patch: patch.c
