@@ -106,17 +106,18 @@ static struct process attach(char *name) {
   sprintf(file, "/proc/%ld/mem", (long)process.pid);
   process.fd = open(file, O_RDWR);
 
+  ptrace(PTRACE_ATTACH, process.pid, 0, 0);
+  waitpid(process.pid, NULL, 0);
+
   return process;
 }
 
 static void detach(struct process process) { 
+  ptrace(PTRACE_DETACH, process.pid, 0, 0);
   close(process.fd);
 }
 
 static int apply(struct process process, struct point patch[], int s) {
-  ptrace(PTRACE_ATTACH, process.pid, 0, 0);
-  waitpid(process.pid, NULL, 0);
-
   for (int i = 0; i < s; i++) {
     printf("0x%x 0x%02x -> 0x%02x\n", (unsigned)patch[i].addr,
         patch[i].a, patch[i].b);
@@ -125,24 +126,17 @@ static int apply(struct process process, struct point patch[], int s) {
     int err = pwrite(process.fd, &byte, 1, process.offset + patch[i].addr);
     if (err == -1) printf("err\n");
   }
-
-  ptrace(PTRACE_DETACH, process.pid, 0, 0);
   return 0;
 }
 
-static int check(struct process process, struct point patch[], int s) {
-  ptrace(PTRACE_ATTACH, process.pid, 0, 0);
-  waitpid(process.pid, NULL, 0);
-
+static int assert(struct process process, struct point patch[], int s) {
   for (int i = 0; i < s; i++) {
     unsigned char byte;
     int err = pread(process.fd, &byte, 1, process.offset + patch[i].addr);
     if (err == -1) printf("err\n");
 
-    printf("0x%x %d\n", (unsigned)patch[i].addr, byte == patch[i].b);
+    printf("0x%x %d\n", (unsigned)patch[i].addr, byte == patch[i].a);
   }
-
-  ptrace(PTRACE_DETACH, process.pid, 0, 0);
   return 0;
 }
 
@@ -170,8 +164,11 @@ int main(int argc, char *argv[]) {
     system(filepath);
   } else {
     process = attach("PacketTracer7");
+    if (assert(process, patch, SIZEOF(patch))) {
+			fprintf(stderr, "bytes don't match\n");
+			exit(1);
+		}
     apply(process, patch, SIZEOF(patch));
-    check(process, patch, SIZEOF(patch));
     detach(process);
     wait(0);
     exit(0);
