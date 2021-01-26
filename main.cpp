@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "lib/pka2xml.hpp"
+#include "include/pka2xml.hpp"
 
 bool opt_exists(char *begin[], char *end[], const std::string &option)
 {
