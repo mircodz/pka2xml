@@ -43,11 +43,19 @@ examples:
   std::exit(1);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   if (argc == 1) {
     help();
   }
+
+#ifdef HAS_UI
+  if (argc > 1 && std::string(argv[1]) == "gui") {
+    QApplication app(argc, argv);
+    Gui gui{};
+    gui.show();
+    return app.exec();
+  }
+#endif
 
   // TODO graceful error checking
   try {
@@ -56,8 +64,7 @@ int main(int argc, char *argv[])
       if (!f_in.is_open()) {
         die("error opening input file");
       }
-      std::string input{std::istreambuf_iterator<char>(f_in),
-                        std::istreambuf_iterator<char>()};
+      std::string input{std::istreambuf_iterator<char>(f_in), std::istreambuf_iterator<char>()};
       f_in.close();
       std::ofstream f_out{argv[3]};
       if (!f_out.is_open()) {
@@ -70,8 +77,7 @@ int main(int argc, char *argv[])
       if (!f_in.is_open()) {
         die("error opening input file");
       }
-      std::string input{std::istreambuf_iterator<char>(f_in),
-                        std::istreambuf_iterator<char>()};
+      std::string input{std::istreambuf_iterator<char>(f_in), std::istreambuf_iterator<char>()};
       f_in.close();
       std::ofstream f_out{argv[3]};
       if (!f_out.is_open()) {
@@ -94,13 +100,22 @@ int main(int argc, char *argv[])
       if (!f_in.is_open()) {
         die("error opening input file");
       }
-      std::string input{std::istreambuf_iterator<char>(f_in),
-                        std::istreambuf_iterator<char>()};
+      std::string input{std::istreambuf_iterator<char>(f_in), std::istreambuf_iterator<char>()};
       std::cout << pka2xml::decrypt_nets(input) << std::endl;
       f_in.close();
-    } else if (argc > 2 && (opt_exists(argv, argv + argc, "-f") || opt_exists(argv, argv + argc, "--forge"))) {
+    } else if (argc > 2 && opt_exists(argv, argv + argc, "--forge")) {
       std::ofstream f_out{argv[2]};
       f_out << pka2xml::encrypt_nets("foobar~foobar~foobar~foobar~1700000000");
+      f_out.close();
+    } else if (argc > 3 && opt_exists(argv, argv + argc, "-f")) {
+      std::ifstream f_in{argv[2]};
+      if (!f_in.is_open()) {
+        die("error opening input file");
+      }
+      std::string input{std::istreambuf_iterator<char>(f_in), std::istreambuf_iterator<char>()};
+      f_in.close();
+      std::ofstream f_out{argv[3]};
+      f_out << pka2xml::fix(input);
       f_out.close();
     } else {
       help();
