@@ -11,14 +11,12 @@ For more information you can read [this short blog post](https://mircodezorzi.gi
 To build a static binary:
 
 ```
-make static
-make install
+make static-install
 ```
 
 To build a dynamic binary:
 ```
-make dynamic
-make install
+make dynamic-install
 ```
 
 ## `pka2xml`

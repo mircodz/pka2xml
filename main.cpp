@@ -7,13 +7,11 @@
 
 #include "include/pka2xml.hpp"
 
-bool opt_exists(char *begin[], char *end[], const std::string &option)
-{
+bool opt_exists(char *begin[], char *end[], const std::string &option) {
   return std::find(begin, end, option) != end;
 }
 
-void die(const char *message)
-{
+void die(const char *message) {
   std::fprintf(stderr, "%s", message);
   std::exit(1);
 }
