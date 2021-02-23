@@ -1,6 +1,6 @@
 Convert Packet Tracer network simulation pka and pkt files into XML and vice versa.
 
-For more information you can read [this short blog post](https://mircodezorzi.github.io/doc/reversing-packet-tracer-part-1/) that explains how I managed to write the utility.
+For more information you can read [this short blog post](https://mircodezorzi.github.io/doc/reversing-packet-tracer/) that explains how I managed to write the utility.
 
 ## Coming Soon
 - Patches for versions other than 7.3.1 on linux
