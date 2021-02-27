@@ -36,6 +36,7 @@ async function Decode() {
     a.href = window.URL.createObjectURL(b);
     a.click();
 
+    document.querySelector('#encode').disabled = false;
     document.querySelector('#loading').style["display"] = "none";
     editor.setValue(str, -1);
   }).catch(err => {
