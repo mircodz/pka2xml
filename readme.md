@@ -13,7 +13,7 @@ For more information you can read [this short blog post](https://mircodezorzi.gi
 docker build -t pka2xml:1.0.0 . && docker run -it pka2xml:1.0.0
 ```
 
-### Building manual
+### Building manually
 To build a static binary:
 
 ```
