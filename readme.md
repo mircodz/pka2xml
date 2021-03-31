@@ -8,6 +8,12 @@ For more information you can read [this short blog post](https://mircodezorzi.gi
 - Reverse module encryption algorithm
 
 ## Building
+### Building with Docker
+```
+docker build -t pka2xml:1.0.0 . && docker run -it pka2xml:1.0.0
+```
+
+### Building manually
 To build a static binary:
 
 ```
